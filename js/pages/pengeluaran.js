@@ -63,7 +63,7 @@ Pages.pengeluaran = {
   _renderList(list) {
     const rev = list.slice().sort((a, b) => {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
-      return diff !== 0 ? diff : b.id - a.id;
+      return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
     if (!rev.length) return UI.emptyState('💸', 'Belum ada pengeluaran');
     return `<div style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto">

@@ -138,7 +138,7 @@ function statRow(label, value, colorClass = '') {
 function renderRecentTransaksi() {
   const list = DB.getTransaksi().slice().sort((a, b) => {
     const diff = new Date(b.tanggal) - new Date(a.tanggal);
-    return diff !== 0 ? diff : b.id - a.id;
+    return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
   }).slice(0, 8);
   if (!list.length) return UI.emptyState('📭', 'Belum ada transaksi. Mulai catat hari ini!');
   return `<div class="table-wrap"><table>

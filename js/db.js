@@ -14,6 +14,41 @@ const DB = (() => {
     settings:     'bk_settings',
   };
 
+  /* ---- SUPABASE SYNC SETUP ---- */
+  const SUPABASE_URL = 'https://yabxsvdehmgsujtzbdar.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhYnhzdmRlaG1nc3VqdHpiZGFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTk0MjcsImV4cCI6MjA5NDA5NTQyN30.ubyyNwzKqsw-UW-PqhRPGjiAPd9M1UUSSihgJ8G68R8';
+  let supabase = null;
+  if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+
+  function _sync(table, data, action = 'UPSERT') {
+    if (!supabase) {
+      if (window.UI) UI.toast('Supabase SDK tidak termuat. Periksa koneksi internet.', 'error');
+      return;
+    }
+    setTimeout(async () => {
+      try {
+        let err = null;
+        if (action === 'UPSERT') {
+          const { error } = await supabase.from(table).upsert(data);
+          err = error;
+        } else if (action === 'DELETE') {
+          const { error } = await supabase.from(table).delete().eq('id', data.id);
+          err = error;
+        }
+        if (err) {
+          console.error('Sync failed for', table, err);
+          if (window.UI) UI.toast(`Gagal Sync ke Supabase (${table}): ` + err.message, 'error');
+        }
+      } catch (e) {
+        console.error(e);
+        if (window.UI) UI.toast('Error jaringan saat sync: ' + e.message, 'error');
+      }
+    }, 100);
+  }
+
+
   /* ---- GENERIC ---- */
   function _load(key) {
     try { return JSON.parse(localStorage.getItem(key)) || []; }
@@ -26,8 +61,8 @@ const DB = (() => {
   function _save(key, data) {
     localStorage.setItem(key, JSON.stringify(data));
   }
-  function _nextId(arr) {
-    return arr.length === 0 ? 1 : Math.max(...arr.map(r => r.id)) + 1;
+  function _nextId() {
+    return crypto.randomUUID();
   }
 
   /* ---- SETTINGS ---- */
@@ -41,7 +76,9 @@ const DB = (() => {
     });
   }
   function saveSettings(data) {
-    _save(KEYS.settings, { ...getSettings(), ...data });
+    const newSettings = { ...getSettings(), ...data };
+    _save(KEYS.settings, newSettings);
+    // _sync('settings', { ...newSettings, id: newSettings.id || _nextId() });
   }
 
   /* ---- ALOKASI RULES ---- */
@@ -77,9 +114,10 @@ const DB = (() => {
   function getTransaksiById(id) { return getTransaksi().find(t => t.id === id); }
   function insertTransaksi(data) {
     const list = getTransaksi();
-    const rec = { ...data, id: _nextId(list), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    const rec = { ...data, id: _nextId(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     list.push(rec);
     _save(KEYS.transaksi, list);
+    _sync('transaksi', rec);
     return rec;
   }
   function updateTransaksi(id, data) {
@@ -88,11 +126,13 @@ const DB = (() => {
     if (idx < 0) throw new Error('Transaksi tidak ditemukan');
     list[idx] = { ...list[idx], ...data, updated_at: new Date().toISOString() };
     _save(KEYS.transaksi, list);
+    _sync('transaksi', list[idx]);
     return list[idx];
   }
   function deleteTransaksi(id) {
     const list = getTransaksi().filter(t => t.id !== id);
     _save(KEYS.transaksi, list);
+    _sync('transaksi', { id }, 'DELETE');
     // Delete related cashflow
     const cf = getCashflow().filter(c => c.transaksi_id !== id);
     _save(KEYS.cashflow, cf);
@@ -102,9 +142,10 @@ const DB = (() => {
   function getCashflow() { return _load(KEYS.cashflow); }
   function insertCashflow(data) {
     const list = getCashflow();
-    const rec = { ...data, id: _nextId(list), created_at: new Date().toISOString() };
+    const rec = { ...data, id: _nextId(), created_at: new Date().toISOString() };
     list.push(rec);
     _save(KEYS.cashflow, list);
+    _sync('cashflow', rec);
     return rec;
   }
   function deleteCashflowByTransaksi(transaksiId) {
@@ -114,6 +155,7 @@ const DB = (() => {
   function deleteCashflow(id) {
     const list = getCashflow().filter(c => c.id !== id);
     _save(KEYS.cashflow, list);
+    _sync('cashflow', { id }, 'DELETE');
   }
   function updateCashflow(id, data) {
     const list = getCashflow();
@@ -121,6 +163,7 @@ const DB = (() => {
     if (idx < 0) return;
     list[idx] = { ...list[idx], ...data };
     _save(KEYS.cashflow, list);
+    _sync('cashflow', list[idx]);
   }
 
   /* ---- DANA SERVIS BALANCE ---- */
@@ -140,9 +183,10 @@ const DB = (() => {
   function getServis() { return _load(KEYS.servis); }
   function insertServis(data) {
     const list = getServis();
-    const rec = { ...data, id: _nextId(list), created_at: new Date().toISOString() };
+    const rec = { ...data, id: _nextId(), created_at: new Date().toISOString() };
     list.push(rec);
     _save(KEYS.servis, list);
+    _sync('servis', rec);
     // Insert cashflow pengeluaran servis
     insertCashflow({
       tanggal: data.tanggal,
@@ -161,6 +205,7 @@ const DB = (() => {
     if (!s) return;
     const list = getServis().filter(s => s.id !== id);
     _save(KEYS.servis, list);
+    _sync('servis', { id }, 'DELETE');
     // Remove related cashflow
     const cf = getCashflow().filter(c => c.servis_id !== id);
     _save(KEYS.cashflow, cf);
@@ -171,6 +216,7 @@ const DB = (() => {
     if (idx < 0) return;
     list[idx] = { ...list[idx], ...data };
     _save(KEYS.servis, list);
+    _sync('servis', list[idx]);
     
     const cf = getCashflow();
     const cfIdx = cf.findIndex(c => c.servis_id === id);
@@ -186,9 +232,10 @@ const DB = (() => {
   function getPengeluaran() { return _load(KEYS.pengeluaran); }
   function insertPengeluaran(data) {
     const list = getPengeluaran();
-    const rec = { ...data, id: _nextId(list), created_at: new Date().toISOString() };
+    const rec = { ...data, id: _nextId(), created_at: new Date().toISOString() };
     list.push(rec);
     _save(KEYS.pengeluaran, list);
+    _sync('pengeluaran', rec);
     // Insert cashflow
     insertCashflow({
       tanggal: data.tanggal,
@@ -205,6 +252,7 @@ const DB = (() => {
   function deletePengeluaran(id) {
     const list = getPengeluaran().filter(p => p.id !== id);
     _save(KEYS.pengeluaran, list);
+    _sync('pengeluaran', { id }, 'DELETE');
     const cf = getCashflow().filter(c => c.pengeluaran_id !== id);
     _save(KEYS.cashflow, cf);
   }
@@ -214,6 +262,7 @@ const DB = (() => {
     if (idx < 0) return;
     list[idx] = { ...list[idx], ...data };
     _save(KEYS.pengeluaran, list);
+    _sync('pengeluaran', list[idx]);
     
     const cf = getCashflow();
     const cfIdx = cf.findIndex(c => c.pengeluaran_id === id);
@@ -229,9 +278,10 @@ const DB = (() => {
   function getUtang() { return _load(KEYS.utang); }
   function insertUtang(data) {
     const list = getUtang();
-    const rec = { ...data, id: _nextId(list), lunas: false, created_at: new Date().toISOString() };
+    const rec = { ...data, id: _nextId(), lunas: false, created_at: new Date().toISOString() };
     list.push(rec);
     _save(KEYS.utang, list);
+    _sync('utang', rec);
     return rec;
   }
   function updateUtang(id, data) {
@@ -240,11 +290,13 @@ const DB = (() => {
     if (idx < 0) throw new Error('Utang tidak ditemukan');
     list[idx] = { ...list[idx], ...data };
     _save(KEYS.utang, list);
+    _sync('utang', list[idx]);
     return list[idx];
   }
   function deleteUtang(id) {
     const list = getUtang().filter(u => u.id !== id);
     _save(KEYS.utang, list);
+    _sync('utang', { id }, 'DELETE');
   }
 
   /* ---- DASHBOARD SUMMARY ---- */
@@ -321,9 +373,10 @@ const DB = (() => {
     if (users.find(u => u.username === username)) {
       throw new Error('Username sudah terdaftar');
     }
-    const newUser = { id: _nextId(users), username, password, fullName, created_at: new Date().toISOString() };
+    const newUser = { id: _nextId(), username, password, full_name: fullName, created_at: new Date().toISOString() };
     users.push(newUser);
     _save(KEYS_AUTH.users, users);
+    _sync('users', newUser);
     return newUser;
   }
 

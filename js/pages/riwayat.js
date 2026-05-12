@@ -4,7 +4,7 @@ Pages.riwayat = {
     const el = document.getElementById('page-riwayat');
     const all = DB.getCashflow().sort((a, b) => {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
-      return diff !== 0 ? diff : b.id - a.id;
+      return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
     el.innerHTML = `
       <div class="section-header mb-16">

@@ -74,7 +74,7 @@ Pages.servis = {
   _renderList() {
     const list = DB.getServis().slice().sort((a, b) => {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
-      return diff !== 0 ? diff : b.id - a.id;
+      return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
     if (!list.length) return UI.emptyState('🔧', 'Belum ada riwayat servis');
     return `<div style="display:flex;flex-direction:column;gap:8px">

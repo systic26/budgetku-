@@ -83,7 +83,7 @@ Pages.utang = {
     if (!list.length) return UI.emptyState('🏦', 'Belum ada utang tercatat');
     const sortedList = list.slice().sort((a, b) => {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
-      return diff !== 0 ? diff : b.id - a.id;
+      return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
     return `<div style="display:flex;flex-direction:column;gap:8px;max-height:450px;overflow-y:auto">
       ${sortedList.map(u => `

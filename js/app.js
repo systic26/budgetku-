@@ -29,7 +29,7 @@ function checkAuth() {
     // Set nama driver default jika belum diset
     const settings = DB.getSettings();
     if (settings.nama_driver === 'Driver') {
-        DB.saveSettings({nama_driver: user.fullName});
+        DB.saveSettings({nama_driver: user.full_name});
     }
     
     // Render initial page
