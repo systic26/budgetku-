@@ -75,7 +75,7 @@ function bindAuthEvents() {
     btn.textContent = 'Mendaftar...';
     try {
       await DB.registerUser(email, pass, name);
-      UI.toast('Pendaftaran Berhasil! Silakan cek email untuk konfirmasi, lalu login.', 'success');
+      UI.toast('Pendaftaran Berhasil! Silakan login dengan email & password kamu.', 'success');
       document.getElementById('formRegister').reset();
       document.getElementById('showLogin').click();
     } catch (err) {
