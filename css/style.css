@@ -404,3 +404,132 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .source-servis { color: var(--warning); }
 .source-manual { color: var(--cyan); }
 .source-pengeluaran { color: var(--danger); }
+
+/* ===== RIWAYAT CASHFLOW — Enhanced Components ===== */
+
+.rw-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.rw-stat-card {
+  border-radius: var(--radius);
+  padding: 18px 18px 14px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.rw-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 99px 99px 0 0;
+}
+.rw-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+.rw-stat-today  { background: linear-gradient(145deg, rgba(79,142,247,0.10), var(--bg-card)); }
+.rw-stat-today::after  { background: var(--primary); box-shadow: 0 0 12px var(--primary); }
+.rw-stat-week   { background: linear-gradient(145deg, rgba(167,139,250,0.10), var(--bg-card)); }
+.rw-stat-week::after   { background: var(--purple); box-shadow: 0 0 12px var(--purple); }
+.rw-stat-month  { background: linear-gradient(145deg, rgba(67,212,154,0.10), var(--bg-card)); }
+.rw-stat-month::after  { background: var(--success); box-shadow: 0 0 12px var(--success); }
+.rw-stat-year   { background: linear-gradient(145deg, rgba(247,185,85,0.10), var(--bg-card)); }
+.rw-stat-year::after   { background: var(--warning); box-shadow: 0 0 12px var(--warning); }
+.rw-stat-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 8px;
+}
+.rw-stat-value {
+  font-size: 1.35rem; font-weight: 800; line-height: 1.2;
+  color: var(--text-primary); margin-bottom: 6px;
+}
+.rw-stat-sub { font-size: 0.72rem; color: var(--text-secondary); }
+
+/* 7-day chart */
+.rw-chart-card { margin-bottom: 18px; padding: 18px 20px 14px; }
+.rw-chart-header { margin-bottom: 14px; }
+.rw-chart-title { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); }
+.rw-chart-bars {
+  display: flex; align-items: flex-end; gap: 8px;
+  height: 90px; padding: 0 4px;
+}
+.rw-bar-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end;
+  height: 100%; position: relative; cursor: pointer;
+}
+.rw-bar-wrap:hover .rw-bar-tooltip { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+.rw-bar-tooltip {
+  position: absolute; bottom: 100%;
+  left: 50%; transform: translateX(-50%);
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px;
+  font-size: 0.68rem; font-weight: 600; white-space: nowrap;
+  opacity: 0; transition: all 0.2s ease;
+  pointer-events: none; z-index: 10; margin-bottom: 4px;
+}
+.rw-bar {
+  width: 100%; min-height: 4px; border-radius: 5px 5px 0 0;
+  background: linear-gradient(180deg, var(--primary) 0%, rgba(79,142,247,0.4) 100%);
+  transition: height 0.4s cubic-bezier(.4,0,.2,1);
+}
+.rw-bar-today {
+  background: linear-gradient(180deg, var(--success) 0%, rgba(67,212,154,0.4) 100%);
+  box-shadow: 0 0 10px rgba(67,212,154,0.4);
+}
+.rw-bar-empty { background: rgba(255,255,255,0.05); height: 4px !important; }
+.rw-chart-labels { display: flex; gap: 8px; padding: 6px 4px 0; }
+.rw-bar-label {
+  flex: 1; text-align: center;
+  font-size: 0.68rem; color: var(--text-muted); font-weight: 500;
+}
+.rw-bar-label-today { color: var(--success); font-weight: 700; }
+
+/* Filter row */
+.rw-filter-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.rw-period-tabs { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.rw-tab {
+  padding: 7px 14px; border-radius: 99px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); font-size: 0.78rem; font-weight: 600;
+  cursor: pointer; font-family: var(--font); transition: all var(--transition); white-space: nowrap;
+}
+.rw-tab:hover { border-color: var(--primary); color: var(--primary); }
+.rw-tab.active { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+.rw-source-filter { width: auto !important; padding: 7px 12px !important; font-size: 0.78rem !important; min-width: 130px; }
+
+/* Table card */
+.rw-table-card { padding: 0; overflow: hidden; }
+.rw-table-summary { display: flex; border-bottom: 1px solid var(--border); }
+.rw-ts-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 12px 10px; gap: 2px; border-right: 1px solid var(--border);
+}
+.rw-ts-item:last-child { border-right: none; }
+.rw-ts-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); }
+.rw-ts-val { font-size: 0.95rem; font-weight: 800; }
+.rw-ts-in .rw-ts-val { color: var(--success); }
+.rw-ts-out .rw-ts-val { color: var(--danger); }
+.rw-ts-net .rw-ts-val { color: var(--text-primary); }
+.rw-table-card .table-wrap { padding: 0 4px; }
+.rw-table-card td, .rw-table-card th { padding: 10px 14px; }
+.fw-500 { font-weight: 500; }
+
+/* Responsive */
+@media (max-width: 900px) { .rw-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) {
+  .rw-summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .rw-stat-value { font-size: 1.05rem; }
+  .rw-tab { padding: 6px 10px; font-size: 0.72rem; }
+  .rw-source-filter { min-width: 110px; }
+}
+@media (max-width: 400px) {
+  .rw-stat-card { padding: 12px 10px; }
+  .rw-chart-bars { height: 70px; }
+}
+
