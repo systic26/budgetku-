@@ -194,18 +194,6 @@ Pages.dashboard = {
         </div>
       </div>
 
-      <!-- Quick Links -->
-      <div class="card mb-20">
-        <div class="card-title mb-14">🔗 Akses Cepat</div>
-        <div class="db-quick-links">
-          <button class="db-quick-btn" onclick="UI.navigateTo('transaksi')">📝<span>Input Transaksi</span></button>
-          <button class="db-quick-btn" onclick="UI.navigateTo('riwayat')">📋<span>Riwayat</span></button>
-          <button class="db-quick-btn" onclick="UI.navigateTo('laporan')">📄<span>Laporan</span></button>
-          <button class="db-quick-btn" onclick="UI.navigateTo('pengeluaran')">💸<span>Pengeluaran</span></button>
-          <button class="db-quick-btn" onclick="UI.navigateTo('servis')">🔧<span>Servis</span></button>
-          <button class="db-quick-btn" onclick="UI.navigateTo('utang')">🏦<span>Utang</span></button>
-        </div>
-      </div>
 
 
       <!-- Recent Transactions -->

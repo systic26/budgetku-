@@ -1616,3 +1616,79 @@ table tbody tr:hover { background: rgba(79,142,247,0.04); }
 .progress-fill.success { background: var(--success); }
 .progress-fill.warning { background: var(--warning); }
 .progress-fill.danger  { background: var(--danger); }
+
+/* ============================================================
+   PENGATURAN — 2-COLUMN LAYOUT + INFO ITEMS
+   ============================================================ */
+.set-main-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .set-main-row { grid-template-columns: 1fr; }
+}
+.set-col-left, .set-col-right { display: flex; flex-direction: column; }
+
+/* Rule card */
+.set-rule-card {
+  padding: 12px 14px;
+  background: var(--bg-base);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+.set-rule-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.set-rule-meta {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  font-size: 0.75rem; color: var(--text-muted);
+}
+.set-rule-meta span { background: var(--bg-card); padding: 2px 6px; border-radius: 4px; }
+
+/* Info stat grid */
+.set-stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.set-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.82rem;
+}
+.set-info-item:last-child { border-bottom: none; }
+.set-info-label { color: var(--text-muted); }
+.set-info-val   { font-weight: 600; color: var(--text-secondary); text-align: right; max-width: 60%; word-break: break-all; }
+
+.set-info-loading { text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem; }
+
+/* Summary strip inside settings */
+.set-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+@media (max-width: 600px) {
+  .set-summary-strip { grid-template-columns: repeat(2, 1fr); }
+}
+.set-sum-item { text-align: center; }
+.set-sum-label { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.set-sum-val   { font-size: 0.9rem; font-weight: 800; }
+
+/* Reset cursor styles — no more pointer dot */
+*, *::before, *::after { cursor: default; }
+a, button, [role=button], input[type=button], input[type=submit],
+input[type=file], label[for], select, .nav-item, .btn,
+.db-cal-cell.cal-clickable, .db-cal-hday-item, .day-gcal-btn,
+.db-gcal-link, .db-cal-nav-btn { cursor: pointer; }
+input[type=text], input[type=email], input[type=password],
+input[type=number], textarea { cursor: text; }
