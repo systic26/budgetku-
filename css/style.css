@@ -1684,11 +1684,4 @@ table tbody tr:hover { background: rgba(79,142,247,0.04); }
 .set-sum-label { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
 .set-sum-val   { font-size: 0.9rem; font-weight: 800; }
 
-/* Reset cursor styles — no more pointer dot */
-*, *::before, *::after { cursor: default; }
-a, button, [role=button], input[type=button], input[type=submit],
-input[type=file], label[for], select, .nav-item, .btn,
-.db-cal-cell.cal-clickable, .db-cal-hday-item, .day-gcal-btn,
-.db-gcal-link, .db-cal-nav-btn { cursor: pointer; }
-input[type=text], input[type=email], input[type=password],
-input[type=number], textarea { cursor: text; }
+
