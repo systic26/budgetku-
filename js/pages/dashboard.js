@@ -48,6 +48,7 @@ Pages.dashboard = {
   },
 
 
+  render() {
     const el = document.getElementById('page-dashboard');
     const s = DB.getDashboardSummary();
     const ds = s.danaServis;
