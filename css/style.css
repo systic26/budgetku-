@@ -1384,3 +1384,235 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
   color: var(--text-secondary);
   font-weight: 500;
 }
+
+/* ============================================================
+   CALENDAR NAV CONTROLS
+   ============================================================ */
+.db-cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-cal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-cal-nav-btn {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.db-cal-nav-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+.db-cal-nav-btn:active { transform: scale(0.9); }
+
+.db-cal-today-btn {
+  font-size: 0.65rem;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.2s;
+}
+.db-cal-today-btn:hover { opacity: 0.85; }
+
+.db-cal-year-sel {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  outline: none;
+  cursor: pointer;
+}
+.db-cal-year-sel:focus { border-color: var(--primary); }
+
+.db-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   GOOGLE CALENDAR INTEGRATION
+   ============================================================ */
+.db-cal-hday-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.db-gcal-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-base);
+  transition: background 0.15s, color 0.15s;
+}
+.db-gcal-link:hover { background: var(--primary); color: #fff; }
+.db-cal-hday-arrow {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+.db-cal-hday-empty {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* Day detail Google Calendar buttons */
+.day-holiday-banner {
+  background: rgba(255,200,0,0.1);
+  border: 1px solid rgba(255,200,0,0.25);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.day-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 14px 0 8px;
+}
+.day-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.day-gcal-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.day-gcal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--primary);
+  color: #fff;
+  transition: opacity 0.15s, transform 0.1s;
+  cursor: pointer;
+}
+.day-gcal-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+.day-gcal-btn.secondary {
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.day-gcal-btn.secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+/* Day sum item font size */
+.day-sum-item > span:first-child { font-size: 0.68rem; }
+
+/* ============================================================
+   GLOBAL UI CLEANUP — ALL PAGES
+   ============================================================ */
+
+/* Section separator spacing */
+.page-content > .card + .card,
+.page-content > .section-header + .card { margin-top: 16px; }
+
+/* Card internal spacing standardized */
+.card { padding: 20px; }
+.card + .card { margin-top: 16px; }
+
+/* Form groups consistent gap */
+.form-group { margin-bottom: 14px; }
+.form-group:last-child { margin-bottom: 0; }
+
+/* Table in card: flush to edges */
+.card .table-wrap { margin: 16px -20px -20px; }
+.card .table-wrap table { border-radius: 0 0 var(--radius) var(--radius); }
+
+/* Table row hover */
+table tbody tr { transition: background 0.12s; }
+table tbody tr:hover { background: rgba(79,142,247,0.04); }
+
+/* Section header gap */
+.section-header { margin-bottom: 12px; margin-top: 24px; }
+.section-header:first-child { margin-top: 0; }
+
+/* Stat cards strip consistent height */
+.stat-card { min-height: 120px; }
+
+/* Page title */
+.page-title, .topbar-title { font-size: 1.3rem; font-weight: 800; }
+
+/* Badge consistent */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 0.68rem; font-weight: 700; }
+.badge-success { background: rgba(78,205,147,0.15); color: var(--success); }
+.badge-danger  { background: rgba(247,111,111,0.15); color: var(--danger); }
+.badge-warning { background: rgba(253,196,77,0.15);  color: var(--warning); }
+.badge-primary { background: rgba(79,142,247,0.15);  color: var(--primary); }
+
+/* Btn-icon consistent */
+.btn-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.btn-icon:hover { background: var(--bg-card); }
+.btn-icon.edit:hover  { background: rgba(79,142,247,0.15); }
+.btn-icon.danger:hover { background: rgba(247,111,111,0.15); }
+
+/* mb- utilities */
+.mb-4  { margin-bottom: 4px; }
+.mb-8  { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-14 { margin-bottom: 14px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-4  { margin-top: 4px; }
+.mt-8  { margin-top: 8px; }
+
+/* Progress bar */
+.progress-bar { height: 6px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; transition: width 0.7s ease; }
+.progress-fill.success { background: var(--success); }
+.progress-fill.warning { background: var(--warning); }
+.progress-fill.danger  { background: var(--danger); }

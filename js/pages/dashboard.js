@@ -1,7 +1,53 @@
-/* Dashboard Page — Enhanced with 30-day chart, heatmap, week comparison */
+/* Dashboard Page — Enhanced Analytics */
 window.Pages = window.Pages || {};
 Pages.dashboard = {
-  render() {
+  _calYear: new Date().getFullYear(),
+  _calMonth: new Date().getMonth(),
+
+  navigateCalendar(dir) {
+    this._calMonth += dir;
+    if (this._calMonth > 11) { this._calMonth = 0; this._calYear++; }
+    if (this._calMonth < 0)  { this._calMonth = 11; this._calYear--; }
+    this._rerenderCalendar();
+  },
+
+  goCalendarToday() {
+    this._calYear  = new Date().getFullYear();
+    this._calMonth = new Date().getMonth();
+    this._rerenderCalendar();
+  },
+
+  setCalYear(y) {
+    this._calYear = parseInt(y);
+    this._rerenderCalendar();
+  },
+
+  _rerenderCalendar() {
+    const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const y = this._calYear, m = this._calMonth;
+    const now = new Date();
+    const isCurrentMonth = y === now.getFullYear() && m === now.getMonth();
+
+    // Update title
+    const titleEl = document.getElementById('dbCalTitle');
+    if (titleEl) titleEl.textContent = `🗓️ ${MONTHS[m]} ${y}`;
+
+    // Today button visibility
+    const todayBtn = document.getElementById('dbCalTodayBtn');
+    if (todayBtn) todayBtn.style.display = isCurrentMonth ? 'none' : 'inline-flex';
+
+    // Update year select
+    const yearSel = document.getElementById('dbCalYear');
+    if (yearSel) yearSel.value = y;
+
+    // Re-render grid
+    const settings = DB.getSettings();
+    const target = settings.target_harian || 150000;
+    const heatmap = this._getMonthHeatmap(y, m);
+    this._renderHeatmap('dbHeatmap', heatmap, target, y, m);
+  },
+
+
     const el = document.getElementById('page-dashboard');
     const s = DB.getDashboardSummary();
     const ds = s.danaServis;
@@ -13,7 +59,13 @@ Pages.dashboard = {
     const target = settings.target_harian || 150000;
     const week = this._getWeekComparison();
     const last30 = this._getLast30();
-    const heatmap = this._getMonthHeatmap();
+    // Always sync calendar to current month on first load, preserve on nav
+    if (!this._calInitialized) {
+      this._calYear  = new Date().getFullYear();
+      this._calMonth = new Date().getMonth();
+      this._calInitialized = true;
+    }
+    const heatmap = this._getMonthHeatmap(this._calYear, this._calMonth);
 
     el.innerHTML = `
       ${debtWarn ? `<div class="alert-debt mb-24">
@@ -105,7 +157,7 @@ Pages.dashboard = {
         <!-- Left: Pie + Stats stacked -->
         <div class="db-cal-left">
           <div class="card mb-16">
-            <div class="card-title mb-8">📊 Distribusi Penghasilan</div>
+            <div class="card-title mb-12">📊 Distribusi Penghasilan</div>
             <div id="pieChart"></div>
           </div>
           <div class="card">
@@ -113,19 +165,29 @@ Pages.dashboard = {
             <div id="dbStatRows"></div>
           </div>
         </div>
-        <!-- Right: Full Calendar like Tanggalan -->
+        <!-- Right: Navigable Full Calendar -->
         <div class="card db-cal-card">
+          <!-- Calendar Header with navigation -->
           <div class="db-cal-header">
-            <div class="card-title">🗓️ Kalender ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][new Date().getMonth()]} ${new Date().getFullYear()}</div>
-            <span class="text-muted" style="font-size:0.7rem">👆 Klik tanggal untuk detail</span>
-          </div>
-          <!-- Grid -->
-          <div class="db-cal-grid-wrap">
-            <div class="db-cal-day-headers">
-              ${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=>`<div class="db-cal-dh">${d}</div>`).join('')}
+            <div class="db-cal-nav">
+              <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(-1)" title="Bulan sebelumnya">◀</button>
+              <div class="db-cal-title-wrap">
+                <span class="card-title" id="dbCalTitle">🗓️ ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][this._calMonth]} ${this._calYear}</span>
+                <button class="db-cal-today-btn" id="dbCalTodayBtn" onclick="Pages.dashboard.goCalendarToday()" style="display:${this._calYear===new Date().getFullYear()&&this._calMonth===new Date().getMonth()?'none':'inline-flex'}">Hari Ini</button>
+              </div>
+              <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(1)" title="Bulan berikutnya">▶</button>
             </div>
-            <div class="db-cal-grid" id="dbHeatmap"></div>
+            <!-- Year selector -->
+            <select class="db-cal-year-sel" id="dbCalYear" onchange="Pages.dashboard.setCalYear(this.value)">
+              ${Array.from({length:8},(_,i)=>new Date().getFullYear()-3+i).map(yr=>`<option value="${yr}" ${yr===this._calYear?'selected':''}>${yr}</option>`).join('')}
+            </select>
           </div>
+          <!-- Day headers -->
+          <div class="db-cal-day-headers">
+            ${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=>`<div class="db-cal-dh">${d}</div>`).join('')}
+          </div>
+          <!-- Calendar grid -->
+          <div class="db-cal-grid" id="dbHeatmap"></div>
           <!-- Holiday list below -->
           <div class="db-cal-holiday-list" id="dbHolidayList"></div>
         </div>
@@ -133,7 +195,7 @@ Pages.dashboard = {
 
       <!-- Quick Links -->
       <div class="card mb-20">
-        <div class="card-title mb-12">🔗 Akses Cepat</div>
+        <div class="card-title mb-14">🔗 Akses Cepat</div>
         <div class="db-quick-links">
           <button class="db-quick-btn" onclick="UI.navigateTo('transaksi')">📝<span>Input Transaksi</span></button>
           <button class="db-quick-btn" onclick="UI.navigateTo('riwayat')">📋<span>Riwayat</span></button>
@@ -144,31 +206,6 @@ Pages.dashboard = {
         </div>
       </div>
 
-      <!-- ROW: Statistik -->
-      <div class="grid-2 mb-20">
-        <div class="card">
-          <div class="card-title">📈 Statistik Operasional</div>
-          <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-            ${statRow('Margin Bersih', s.marginBersih.toFixed(2)+'%', s.marginBersih>=30?'success':'warning')}
-            ${statRow('Rata-rata Pendapatan/Hari', UI.formatRp(s.rataRataPendapatan), 'primary')}
-            ${statRow('Rata-rata Pengeluaran/Hari', UI.formatRp(s.rataRataPengeluaran), 'warning')}
-            ${statRow('Total Hari Kerja', s.hariKerja+' hari', 'success')}
-            ${statRow('Total Alokasi Servis', UI.formatRp(s.alokasiServis), 'warning')}
-            ${statRow('Rasio Utang/Bersih', rasioDisplay+'×', rasio>1?'danger':'success')}
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title mb-8">🔗 Akses Cepat</div>
-          <div class="db-quick-links">
-            <button class="db-quick-btn" onclick="UI.navigateTo('transaksi')">📝<span>Input Transaksi</span></button>
-            <button class="db-quick-btn" onclick="UI.navigateTo('riwayat')">📋<span>Riwayat</span></button>
-            <button class="db-quick-btn" onclick="UI.navigateTo('laporan')">📄<span>Laporan</span></button>
-            <button class="db-quick-btn" onclick="UI.navigateTo('pengeluaran')">💸<span>Pengeluaran</span></button>
-            <button class="db-quick-btn" onclick="UI.navigateTo('servis')">🔧<span>Servis</span></button>
-            <button class="db-quick-btn" onclick="UI.navigateTo('utang')">🏦<span>Utang</span></button>
-          </div>
-        </div>
-      </div>
 
       <!-- Recent Transactions -->
       <div class="section-header">
@@ -186,7 +223,7 @@ Pages.dashboard = {
       { label: 'Insentif', value: s.insentifIncome, color: 'var(--purple)' },
     ]);
     this._renderLineChart('dbLineChart', last30.data);
-    this._renderHeatmap('dbHeatmap', heatmap, target);
+    this._renderHeatmap('dbHeatmap', heatmap, target, this._calYear, this._calMonth);
 
     // Render stat rows in middle card
     const statRowsEl = document.getElementById('dbStatRows');
@@ -301,10 +338,10 @@ Pages.dashboard = {
     return H[dateStr] || null;
   },
 
-  _getMonthHeatmap() {
+  _getMonthHeatmap(y, m) {
     const cf = DB.getCashflow();
     const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth();
+    if (y === undefined) { y = now.getFullYear(); m = now.getMonth(); }
     const daysInMonth = new Date(y, m+1, 0).getDate();
     const map = {};
     cf.filter(c => c.tanggal && c.tanggal.startsWith(`${y}-${String(m+1).padStart(2,'0')}`))
@@ -319,7 +356,8 @@ Pages.dashboard = {
     for (let d = 1; d <= daysInMonth; d++) {
       const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
       const holiday = this._getHoliday(dStr);
-      result.push({ day: d, value: map[d]||0, isToday: d===now.getDate(), holiday });
+      const isToday = y === now.getFullYear() && m === now.getMonth() && d === now.getDate();
+      result.push({ day: d, value: map[d]||0, isToday, holiday });
     }
     return result;
   },
@@ -367,18 +405,20 @@ Pages.dashboard = {
       </svg>`;
   },
 
-  _renderHeatmap(containerId, cells, target) {
+  _renderHeatmap(containerId, cells, target, cy, cm) {
     const el = document.getElementById(containerId);
     if (!el) return;
     const now = new Date();
-    const y = now.getFullYear(), m = now.getMonth();
+    const y = cy !== undefined ? cy : now.getFullYear();
+    const m = cm !== undefined ? cm : now.getMonth();
 
     // Build cells
     el.innerHTML = cells.map((c, i) => {
       if (!c) return `<div class="db-cal-cell empty"></div>`;
       const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
-      const isFuture = new Date(dStr+'T00:00:00') > now && !c.isToday;
-      const dayOfWeek = (i % 7); // 0=Mon ... 6=Sun
+      const cellDate = new Date(dStr+'T00:00:00');
+      const isFuture = cellDate > now && !c.isToday;
+      const dayOfWeek = (i % 7); // 0=Mon...6=Sun
       const isSun = dayOfWeek === 6;
       const pct = target > 0 ? Math.min(1, c.value / target) : 0;
       const hasIncome = c.value > 0;
@@ -387,16 +427,16 @@ Pages.dashboard = {
       let cellClass = 'db-cal-cell';
       if (c.isToday) cellClass += ' cal-today';
       if (c.holiday) cellClass += ' cal-holiday';
-      if (isSun) cellClass += ' cal-sun';
+      if (isSun && !c.isToday) cellClass += ' cal-sun';
       if (!isFuture) cellClass += ' cal-clickable';
       if (isFuture) cellClass += ' cal-future';
 
       return `<div class="${cellClass}"
         ${!isFuture ? `onclick="Pages.dashboard._showDayDetail('${dStr}')"` : ''}
-        style="${hasIncome ? `background:${incomeColor};background:linear-gradient(135deg,${incomeColor}22,${incomeColor}11)` : ''}; animation-delay:${i*8}ms">
+        style="${hasIncome ? `background:linear-gradient(135deg,${incomeColor}22,${incomeColor}0a)` : ''}; animation-delay:${i*8}ms">
         <span class="db-cal-num">${c.day}</span>
         ${c.holiday ? '<span class="db-cal-hday-dot"></span>' : ''}
-        ${hasIncome ? `<span class="db-cal-income">${UI.formatRp(c.value).replace('Rp','')}</span>` : ''}
+        ${hasIncome ? `<span class="db-cal-income">${UI.formatRp(c.value).replace('Rp','').replace('.000','k')}</span>` : ''}
       </div>`;
     }).join('');
 
@@ -404,16 +444,27 @@ Pages.dashboard = {
     const listEl = document.getElementById('dbHolidayList');
     if (!listEl) return;
     const holidays = cells.filter(c => c && c.holiday);
-    if (!holidays.length) { listEl.innerHTML = ''; return; }
+    const gcalMonthUrl = `https://calendar.google.com/calendar/r/month/${y}/${m+1}`;
     listEl.innerHTML = `
-      <div class="db-cal-hday-title">\ud83c\udf89 Hari Libur Bulan Ini</div>
+      <div class="db-cal-hday-header">
+        <div class="db-cal-hday-title">🎉 Hari Libur ${holidays.length ? `(${holidays.length})` : 'Bulan Ini'}</div>
+        <a class="db-gcal-link" href="${gcalMonthUrl}" target="_blank" rel="noopener">
+          <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" width="14" height="14" style="vertical-align:middle;margin-right:4px"/>
+          Google Calendar
+        </a>
+      </div>
+      ${holidays.length ? `
       <div class="db-cal-hday-items">
-        ${holidays.map(c => `
-          <div class="db-cal-hday-item" onclick="Pages.dashboard._showDayDetail('${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}')">
+        ${holidays.map(c => {
+          const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+          return `<div class="db-cal-hday-item" onclick="Pages.dashboard._showDayDetail('${dStr}')">
             <span class="db-cal-hday-num">${c.day}</span>
             <span class="db-cal-hday-name">${c.holiday}</span>
-          </div>`).join('')}
-      </div>`;
+            <span class="db-cal-hday-arrow">›</span>
+          </div>`;
+        }).join('')}
+      </div>` : `<div class="db-cal-hday-empty">✅ Tidak ada hari libur bulan ini</div>`}
+    `;
   },
 
   _showDayDetail(dateStr) {
@@ -448,20 +499,23 @@ Pages.dashboard = {
     serv.forEach(s => events.push({ icon:'🔩', label:'Servis: '+s.nama_servis, detail:'-'+UI.formatRp(s.biaya)+(s.keterangan?' · '+s.keterangan:''), color:'warning', time:'' }));
 
     const noData = events.length === 0;
+    const gcalDayUrl = `https://calendar.google.com/calendar/r/day/${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+    const gcalNewUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&dates=${dateStr.replace(/-/g,'')}/${dateStr.replace(/-/g,'')}&text=BudgetKu+${dateStr}&details=Pendapatan:+${UI.formatRp(income)}`;
+
     UI.openModal(`📅 ${dateFormatted}`,
-      `${holiday ? `<div style="background:rgba(255,200,0,0.1);border:1px solid rgba(255,200,0,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
-        <span style="font-size:1.4rem">🎉</span>
-        <div><div style="font-weight:700;font-size:0.88rem;color:#f5c842">${holiday}</div><div style="font-size:0.72rem;color:var(--text-muted)">Hari Libur Nasional Indonesia</div></div>
+      `${holiday ? `<div class="day-holiday-banner">
+        <span style="font-size:1.3rem">🎉</span>
+        <div><div style="font-weight:700;font-size:0.88rem;color:#f5c842">${holiday}</div><div style="font-size:0.7rem;color:var(--text-muted)">Hari Libur Nasional Indonesia</div></div>
       </div>` : ''}
       <div class="day-detail-summary">
-        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGHASILAN</span><span class="text-success fw-700">${income>0?'+':''} ${UI.formatRp(income)}</span></div>
-        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGELUARAN</span><span class="text-danger fw-700">${pengeluaran>0?'-':''} ${UI.formatRp(pengeluaran)}</span></div>
-        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">ALOKASI SERVIS</span><span class="text-warning fw-700">${UI.formatRp(alokasi)}</span></div>
-        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">NET</span><span class="fw-700 ${net>=0?'text-success':'text-danger'}">${net>=0?'+':''} ${UI.formatRp(net)}</span></div>
+        <div class="day-sum-item"><span class="text-muted">PENGHASILAN</span><span class="text-success fw-700">${income>0?'+':''} ${UI.formatRp(income)}</span></div>
+        <div class="day-sum-item"><span class="text-muted">PENGELUARAN</span><span class="text-danger fw-700">${pengeluaran>0?'-':''} ${UI.formatRp(pengeluaran)}</span></div>
+        <div class="day-sum-item"><span class="text-muted">ALOKASI SERVIS</span><span class="text-warning fw-700">${UI.formatRp(alokasi)}</span></div>
+        <div class="day-sum-item"><span class="text-muted">NET</span><span class="fw-700 ${net>=0?'text-success':'text-danger'}">${net>=0?'+':''} ${UI.formatRp(net)}</span></div>
       </div>
-      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin:14px 0 8px">📋 Kronologi Hari Ini</div>
+      <div class="day-section-title">📋 Kronologi Hari Ini</div>
       ${noData
-        ? `<div style="text-align:center;padding:24px;color:var(--text-muted)">😴 Tidak ada aktivitas tercatat hari ini</div>`
+        ? `<div class="day-empty">😴 Tidak ada aktivitas tercatat hari ini</div>`
         : `<div class="day-timeline">
           ${events.map(ev=>`
             <div class="day-tl-item">
@@ -474,8 +528,17 @@ Pages.dashboard = {
                 </div>
               </div>
             </div>`).join('')}
-          </div>`
-      }`,
+          </div>`}
+      <!-- Google Calendar row -->
+      <div class="day-gcal-row">
+        <a class="day-gcal-btn" href="${gcalDayUrl}" target="_blank" rel="noopener">
+          <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" width="16" height="16"/>
+          Lihat di Google Calendar
+        </a>
+        <a class="day-gcal-btn secondary" href="${gcalNewUrl}" target="_blank" rel="noopener">
+          + Tambah Event ke Google Calendar
+        </a>
+      </div>`,
       `<button class="btn btn-outline" onclick="UI.closeModal()">Tutup</button>
        <button class="btn btn-primary" onclick="UI.closeModal();UI.navigateTo('transaksi')">+ Input Transaksi</button>`
     );
