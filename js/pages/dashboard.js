@@ -70,46 +70,77 @@ Pages.dashboard = {
           </div>
           <!-- Target Harian -->
           <div class="card db-target-card">
-            <div class="card-title mb-8">🎯 Target Harian Hari Ini</div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
-              <span class="db-target-val ${s.todayIncome >= target ? 'text-success' : 'text-warning'}">${UI.formatRp(s.todayIncome || 0)}</span>
-              <span class="text-muted" style="font-size:0.75rem">/ ${UI.formatRp(target)}</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill ${s.todayIncome >= target ? 'success' : s.todayIncome >= target*0.6 ? 'warning' : 'danger'}"
-                   style="width:${Math.min(100, Math.round(((s.todayIncome||0)/target)*100))}%"></div>
-            </div>
-            <div class="text-muted mt-4" style="font-size:0.72rem">
-              ${s.todayIncome >= target ? '✅ Target tercapai!' : `Kurang ${UI.formatRp(target - (s.todayIncome||0))}`}
+            <div class="card-title mb-12">🎯 Target Harian Hari Ini</div>
+            <div class="db-target-body">
+              <!-- Circular Progress -->
+              <div class="db-target-ring-wrap">
+                <svg viewBox="0 0 80 80" class="db-target-ring">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
+                  <circle cx="40" cy="40" r="32" fill="none"
+                    stroke="${s.todayIncome>=target?'var(--success)':s.todayIncome>=target*0.6?'var(--warning)':'var(--danger)'}"
+                    stroke-width="7" stroke-linecap="round"
+                    stroke-dasharray="201"
+                    stroke-dashoffset="${201 - Math.min(201, Math.round((((s.todayIncome||0)/target)*201)))}"
+                    transform="rotate(-90 40 40)"
+                    style="transition:stroke-dashoffset 1s ease"/>
+                </svg>
+                <div class="db-target-ring-pct">${Math.min(100,Math.round(((s.todayIncome||0)/target)*100))}%</div>
+              </div>
+              <!-- Numbers -->
+              <div class="db-target-nums">
+                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Pendapatan Hari Ini</div>
+                <div style="font-size:1.25rem;font-weight:800;color:${s.todayIncome>=target?'var(--success)':'var(--text-primary)'};margin:4px 0">${UI.formatRp(s.todayIncome||0)}</div>
+                <div style="font-size:0.72rem;color:var(--text-muted)">Target: ${UI.formatRp(target)}</div>
+                <div style="margin-top:8px;font-size:0.78rem;font-weight:600" class="${s.todayIncome>=target?'text-success':'text-warning'}">
+                  ${s.todayIncome>=target?'✅ Target Tercapai!':'⚡ Kurang '+UI.formatRp(target-(s.todayIncome||0))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ROW: Pie chart + Stats + Heatmap (3-col) -->
-      <div class="db-bottom-row mb-20">
-        <!-- Pie Chart -->
-        <div class="card">
-          <div class="card-title mb-8">📊 Distribusi Penghasilan</div>
-          <div id="pieChart"></div>
-        </div>
-        <!-- Stat rows -->
-        <div class="card">
-          <div class="card-title mb-12">📈 Statistik Operasional</div>
-          <div id="dbStatRows"></div>
-        </div>
-        <!-- Heatmap Calendar -->
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div class="card-title">🗓️ Kalender Bulan Ini</div>
-            <span class="text-muted" style="font-size:0.7rem">Klik hari untuk detail</span>
+      <!-- ROW: Pie+Stats left | Calendar full right -->
+      <div class="db-cal-row mb-20">
+        <!-- Left: Pie + Stats stacked -->
+        <div class="db-cal-left">
+          <div class="card mb-16">
+            <div class="card-title mb-8">📊 Distribusi Penghasilan</div>
+            <div id="pieChart"></div>
           </div>
-          <div class="db-heatmap" id="dbHeatmap"></div>
-          <div class="db-heatmap-legend">
-            <span>Rp0</span>
-            <div class="db-legend-bar"></div>
-            <span>${UI.formatRp(target)}+</span>
+          <div class="card">
+            <div class="card-title mb-12">📈 Statistik Operasional</div>
+            <div id="dbStatRows"></div>
           </div>
+        </div>
+        <!-- Right: Full Calendar like Tanggalan -->
+        <div class="card db-cal-card">
+          <div class="db-cal-header">
+            <div class="card-title">🗓️ Kalender ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][new Date().getMonth()]} ${new Date().getFullYear()}</div>
+            <span class="text-muted" style="font-size:0.7rem">👆 Klik tanggal untuk detail</span>
+          </div>
+          <!-- Grid -->
+          <div class="db-cal-grid-wrap">
+            <div class="db-cal-day-headers">
+              ${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=>`<div class="db-cal-dh">${d}</div>`).join('')}
+            </div>
+            <div class="db-cal-grid" id="dbHeatmap"></div>
+          </div>
+          <!-- Holiday list below -->
+          <div class="db-cal-holiday-list" id="dbHolidayList"></div>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="card mb-20">
+        <div class="card-title mb-12">🔗 Akses Cepat</div>
+        <div class="db-quick-links">
+          <button class="db-quick-btn" onclick="UI.navigateTo('transaksi')">📝<span>Input Transaksi</span></button>
+          <button class="db-quick-btn" onclick="UI.navigateTo('riwayat')">📋<span>Riwayat</span></button>
+          <button class="db-quick-btn" onclick="UI.navigateTo('laporan')">📄<span>Laporan</span></button>
+          <button class="db-quick-btn" onclick="UI.navigateTo('pengeluaran')">💸<span>Pengeluaran</span></button>
+          <button class="db-quick-btn" onclick="UI.navigateTo('servis')">🔧<span>Servis</span></button>
+          <button class="db-quick-btn" onclick="UI.navigateTo('utang')">🏦<span>Utang</span></button>
         </div>
       </div>
 
@@ -341,28 +372,47 @@ Pages.dashboard = {
     if (!el) return;
     const now = new Date();
     const y = now.getFullYear(), m = now.getMonth();
-    const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-    const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-    el.innerHTML = `
-      <div class="db-heatmap-days">${dayLabels.map(d=>`<div class="db-hd-label">${d}</div>`).join('')}</div>
-      <div class="db-heatmap-grid">
-        ${cells.map((c,i) => {
-          if (!c) return `<div class="db-hm-cell empty"></div>`;
-          const pct = Math.min(1, c.value / target);
-          const color = pct >= 1 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : c.value > 0 ? 'var(--primary)' : c.holiday ? 'rgba(255,200,0,0.10)' : 'rgba(255,255,255,0.04)';
-          const opacity = c.value === 0 ? 1 : 0.2 + pct * 0.8;
-          const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
-          const isFuture = new Date(dStr+'T00:00:00') > now && !c.isToday;
-          const titleText = `${c.day} ${monthNames[m]}${c.holiday ? '\n🎉 ' + c.holiday : ''}${c.value > 0 ? '\n' + UI.formatRp(c.value) : ''}`;
-          return `<div
-            class="db-hm-cell ${c.isToday?'today':''} ${isFuture?'future':'clickable'}${c.holiday?' holiday':''}"
-            style="background:${color};opacity:${opacity};animation-delay:${i*10}ms"
-            title="${titleText.replace(/"/g,"'")}"
-            ${!isFuture ? `onclick="Pages.dashboard._showDayDetail('${dStr}')"` : ''}>
-            <span class="db-hm-num">${c.day}</span>
-            ${c.holiday ? '<span class="db-hm-holiday-dot"></span>' : ''}
-          </div>`;
-        }).join('')}
+
+    // Build cells
+    el.innerHTML = cells.map((c, i) => {
+      if (!c) return `<div class="db-cal-cell empty"></div>`;
+      const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+      const isFuture = new Date(dStr+'T00:00:00') > now && !c.isToday;
+      const dayOfWeek = (i % 7); // 0=Mon ... 6=Sun
+      const isSun = dayOfWeek === 6;
+      const pct = target > 0 ? Math.min(1, c.value / target) : 0;
+      const hasIncome = c.value > 0;
+      const incomeColor = pct>=1 ? 'var(--success)' : pct>=0.5 ? 'var(--warning)' : 'var(--primary)';
+
+      let cellClass = 'db-cal-cell';
+      if (c.isToday) cellClass += ' cal-today';
+      if (c.holiday) cellClass += ' cal-holiday';
+      if (isSun) cellClass += ' cal-sun';
+      if (!isFuture) cellClass += ' cal-clickable';
+      if (isFuture) cellClass += ' cal-future';
+
+      return `<div class="${cellClass}"
+        ${!isFuture ? `onclick="Pages.dashboard._showDayDetail('${dStr}')"` : ''}
+        style="${hasIncome ? `background:${incomeColor};background:linear-gradient(135deg,${incomeColor}22,${incomeColor}11)` : ''}; animation-delay:${i*8}ms">
+        <span class="db-cal-num">${c.day}</span>
+        ${c.holiday ? '<span class="db-cal-hday-dot"></span>' : ''}
+        ${hasIncome ? `<span class="db-cal-income">${UI.formatRp(c.value).replace('Rp','')}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    // Holiday list below
+    const listEl = document.getElementById('dbHolidayList');
+    if (!listEl) return;
+    const holidays = cells.filter(c => c && c.holiday);
+    if (!holidays.length) { listEl.innerHTML = ''; return; }
+    listEl.innerHTML = `
+      <div class="db-cal-hday-title">\ud83c\udf89 Hari Libur Bulan Ini</div>
+      <div class="db-cal-hday-items">
+        ${holidays.map(c => `
+          <div class="db-cal-hday-item" onclick="Pages.dashboard._showDayDetail('${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}')">
+            <span class="db-cal-hday-num">${c.day}</span>
+            <span class="db-cal-hday-name">${c.holiday}</span>
+          </div>`).join('')}
       </div>`;
   },
 
