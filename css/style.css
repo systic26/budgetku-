@@ -555,3 +555,24 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
   .rw-chart-bars { height: 70px; }
 }
 
+/* ===== INPUT TRANSAKSI — 2-col layout ===== */
+.trx-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.trx-left, .trx-right { min-width: 0; }
+.trx-today-card { background: linear-gradient(145deg, rgba(79,142,247,0.06), var(--bg-card)); }
+.trx-recent-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.trx-recent-item:last-child { border-bottom: none; }
+
+@media (max-width: 900px) {
+  .trx-layout { grid-template-columns: 1fr; }
+}
+
+
