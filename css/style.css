@@ -837,3 +837,100 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .page-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
 @media (max-width: 640px) { .page-stats-row { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 961px) { .form-sticky { position: sticky; top: calc(var(--topbar-h) + 16px); } }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(79,142,247,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(79,142,247,0); }
+  100% { box-shadow: 0 0 0 0 rgba(79,142,247,0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Page entrance */
+.page.active .card { animation: fadeInUp 0.35s ease both; }
+.page.active .stat-card { animation: fadeInUp 0.35s ease both; }
+
+/* Heatmap cell animations */
+.db-heatmap-grid .db-hm-cell { animation: fadeIn 0.25s ease both; }
+
+/* Clickable heatmap cells */
+.db-hm-cell.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.db-hm-cell.clickable:hover {
+  transform: scale(1.25);
+  z-index: 5;
+  filter: brightness(1.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+}
+.db-hm-cell.clickable:active { transform: scale(0.95); }
+.db-hm-cell.future { opacity: 0.2 !important; cursor: not-allowed; }
+.db-hm-cell.today { animation: pulse-ring 2s ease infinite; }
+.db-hm-num { font-size: 0.6rem; font-weight: 700; pointer-events: none; }
+
+/* Stat card nav badge */
+.stat-card { position: relative; overflow: hidden; }
+.stat-nav-badge {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 0.65rem; color: var(--text-muted);
+  background: var(--bg-base); border-radius: 99px;
+  width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+}
+
+/* Day detail modal */
+.day-detail-summary {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 4px;
+}
+.day-sum-item {
+  background: var(--bg-base); border-radius: var(--radius-sm);
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.day-timeline { display: flex; flex-direction: column; gap: 0; }
+.day-tl-item {
+  display: flex; align-items: flex-start; gap: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeInUp 0.25s ease both;
+}
+.day-tl-item:last-child { border-bottom: none; }
+.day-tl-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 5px; margin-right: 12px;
+}
+.bg-success { background: var(--success); }
+.bg-danger  { background: var(--danger); }
+.bg-warning { background: var(--warning); }
+.bg-primary { background: var(--primary); }
+.bg-muted   { background: var(--text-muted); }
+.day-tl-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+.day-tl-icon { font-size: 1.2rem; flex-shrink: 0; }
+.fw-700 { font-weight: 700; }
+
+/* Card link no overflow on label */
+.stat-label { white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.stat-card .stat-label { font-size: 0.7rem; letter-spacing: 0.05em; }
+
+/* Smooth card hover */
+.card { transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+.card:hover { border-color: rgba(79,142,247,0.15); }
+
+/* Nav item animation */
+.nav-item { transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease; }
+.nav-item:hover { transform: translateX(3px); }
+.nav-item.active { transform: none; }

@@ -27,16 +27,16 @@ Pages.dashboard = {
           `<div class="stat-breakdown">
             <div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div>
             <div class="breakdown-row"><span class="breakdown-label">Insentif</span><span class="breakdown-val text-primary">${UI.formatRp(s.insentifIncome)}</span></div>
-          </div>`, 'riwayat')}
+          </div>`, 'riwayat', 0)}
         ${statCard('success','✅','Saldo Bersih', s.saldoBersih,
-          `<div class="stat-meta">Setelah pengeluaran & alokasi servis</div>`, 'laporan')}
+          `<div class="stat-meta">Setelah pengeluaran & alokasi servis</div>`, 'laporan', 1)}
         ${statCard('warning','🔧','Dana Servis', ds.sisa,
           `<div class="progress-wrap">
             <div class="progress-labels"><span>Terpakai ${dsPct}%</span><span>${UI.formatRp(ds.masuk)} terkumpul</span></div>
             <div class="progress-bar"><div class="progress-fill ${dsPct>80?'danger':'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div>
-          </div>`, 'servis')}
+          </div>`, 'servis', 2)}
         ${statCard('danger','🏦','Total Utang', s.totalUtang,
-          `<div class="stat-meta">Rasio: ${rasioDisplay}×</div>`, 'utang')}
+          `<div class="stat-meta">Rasio: ${rasioDisplay}×</div>`, 'utang', 3)}
       </div>
 
       <!-- ROW: 30-day chart + Week comparison -->
@@ -255,21 +255,86 @@ Pages.dashboard = {
   _renderHeatmap(containerId, cells, target) {
     const el = document.getElementById(containerId);
     if (!el) return;
+    const now = new Date();
+    const y = now.getFullYear(), m = now.getMonth();
     const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
     el.innerHTML = `
       <div class="db-heatmap-days">${dayLabels.map(d=>`<div class="db-hd-label">${d}</div>`).join('')}</div>
       <div class="db-heatmap-grid">
-        ${cells.map(c => {
+        ${cells.map((c,i) => {
           if (!c) return `<div class="db-hm-cell empty"></div>`;
           const pct = Math.min(1, c.value / target);
-          const opacity = c.value === 0 ? 0 : 0.15 + pct * 0.85;
-          const color = pct >= 1 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : 'var(--primary)';
-          return `<div class="db-hm-cell ${c.isToday?'today':''}" title="${c.day}: ${UI.formatRp(c.value)}"
-            style="background:${c.value>0?color:'rgba(255,255,255,0.04)'};opacity:${c.value>0?opacity:1}">
-            <span>${c.day}</span>
+          const color = pct >= 1 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : c.value > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.04)';
+          const opacity = c.value === 0 ? 1 : 0.2 + pct * 0.8;
+          const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+          const isFuture = new Date(dStr+'T00:00:00') > now && !c.isToday;
+          return `<div
+            class="db-hm-cell ${c.isToday?'today':''} ${isFuture?'future':'clickable'}"
+            style="background:${color};opacity:${opacity};animation-delay:${i*12}ms"
+            title="${c.day} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][m]}: ${c.value>0?UI.formatRp(c.value):'Tidak ada data'}"
+            ${!isFuture ? `onclick="Pages.dashboard._showDayDetail('${dStr}')"` : ''}>
+            <span class="db-hm-num">${c.day}</span>
           </div>`;
         }).join('')}
       </div>`;
+  },
+
+  _showDayDetail(dateStr) {
+    const cf   = DB.getCashflow().filter(c => c.tanggal === dateStr);
+    const trxs = DB.getTransaksi().filter(t => t.tanggal === dateStr);
+    const peng = DB.getPengeluaran ? DB.getPengeluaran().filter(p => p.tanggal === dateStr) : [];
+    const serv = DB.getServis().filter(s => s.tanggal === dateStr);
+
+    const income = cf.filter(c=>c.kategori==='PENGHASILAN').reduce((s,c)=>s+(c.nominal||0),0);
+    const pengeluaran = cf.filter(c=>c.kategori==='PENGELUARAN').reduce((s,c)=>s+(c.nominal||0),0);
+    const alokasi = cf.filter(c=>c.source_type==='SERVIS_ALLOC').reduce((s,c)=>s+(c.nominal||0),0);
+    const net = income - pengeluaran - alokasi;
+
+    const d = new Date(dateStr+'T00:00:00');
+    const dayNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const dateFormatted = `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+
+    // Build timeline events
+    const events = [];
+    trxs.forEach(t => {
+      const isWork = t.status_operasi === 'WORKING';
+      events.push({ icon: isWork?'⚡':'😴', label: isWork?'Hari Kerja':'Hari Libur', detail: isWork?`${t.jumlah_orderan||0} order · ${t.jam_mulai||'--'}–${t.jam_selesai||'--'}`:'Tidak ada aktivitas', color: isWork?'success':'muted', time: t.jam_mulai||'' });
+    });
+    cf.filter(c=>c.source_type==='TRIP').forEach(c => events.push({ icon:'🚗', label:'Penghasilan Trip', detail:'+'+UI.formatRp(c.nominal), color:'success', time:'' }));
+    cf.filter(c=>c.source_type==='INCENTIVE').forEach(c => events.push({ icon:'🎁', label:'Insentif Diterima', detail:'+'+UI.formatRp(c.nominal), color:'primary', time:'' }));
+    cf.filter(c=>c.source_type==='SERVIS_ALLOC').forEach(c => events.push({ icon:'🔧', label:'Alokasi Dana Servis', detail:UI.formatRp(c.nominal)+' dialokasikan', color:'warning', time:'' }));
+    peng.forEach(p => events.push({ icon:'💸', label:p.kategori||'Pengeluaran', detail:'-'+UI.formatRp(p.nominal)+(p.keterangan?' · '+p.keterangan:''), color:'danger', time:'' }));
+    serv.forEach(s => events.push({ icon:'🔩', label:'Servis: '+s.nama_servis, detail:'-'+UI.formatRp(s.biaya)+(s.keterangan?' · '+s.keterangan:''), color:'warning', time:'' }));
+
+    const noData = events.length === 0;
+    UI.openModal(`📅 ${dateFormatted}`,
+      `<div class="day-detail-summary">
+        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGHASILAN</span><span class="text-success fw-700">${income>0?'+':''} ${UI.formatRp(income)}</span></div>
+        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGELUARAN</span><span class="text-danger fw-700">${pengeluaran>0?'-':''} ${UI.formatRp(pengeluaran)}</span></div>
+        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">ALOKASI SERVIS</span><span class="text-warning fw-700">${UI.formatRp(alokasi)}</span></div>
+        <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">NET</span><span class="fw-700 ${net>=0?'text-success':'text-danger'}">${net>=0?'+':''} ${UI.formatRp(net)}</span></div>
+      </div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-muted);margin:14px 0 8px">📋 Kronologi Hari Ini</div>
+      ${noData
+        ? `<div style="text-align:center;padding:24px;color:var(--text-muted)">😴 Tidak ada aktivitas tercatat hari ini</div>`
+        : `<div class="day-timeline">
+          ${events.map(ev=>`
+            <div class="day-tl-item">
+              <div class="day-tl-dot bg-${ev.color}"></div>
+              <div class="day-tl-content">
+                <div class="day-tl-icon">${ev.icon}</div>
+                <div>
+                  <div class="fw-600" style="font-size:0.85rem">${ev.label}</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted)">${ev.detail}</div>
+                </div>
+              </div>
+            </div>`).join('')}
+          </div>`
+      }`,
+      `<button class="btn btn-outline" onclick="UI.closeModal()">Tutup</button>
+       <button class="btn btn-primary" onclick="UI.closeModal();UI.navigateTo('transaksi')">+ Input Transaksi</button>`
+    );
   },
 
   _editTransaksi(id) {
@@ -304,11 +369,14 @@ Pages.dashboard = {
   }
 };
 
-function statCard(type, icon, label, value, extra='', navTo='') {
-  const clickable = navTo ? `card-link ripple-host" onclick="UI.navigateTo('${navTo}')` : ``;
-  return `<div class="stat-card ${type} ${clickable ? 'card-link ripple-host' : ''}" ${navTo ? `onclick="UI.navigateTo('${navTo}')" role="button" tabindex="0"` : ''} style="${navTo?'cursor:pointer':''}">
+function statCard(type, icon, label, value, extra='', navTo='', delay=0) {
+  const animStyle = `animation: fadeInUp 0.4s ease both; animation-delay: ${delay*60}ms`;
+  return `<div class="stat-card ${type}${navTo?' card-link':''}"
+    ${navTo?`onclick="UI.navigateTo('${navTo}')" role="button" tabindex="0"`:''}  
+    style="${animStyle}${navTo?';cursor:pointer':''}">
+    ${navTo?`<div class="stat-nav-badge">→</div>`:''}
     <div class="stat-icon">${icon}</div>
-    <div class="stat-label">${label}${navTo ? ' <span style="font-size:0.6rem;opacity:0.5">→</span>' : ''}</div>
+    <div class="stat-label">${label}</div>
     <div class="stat-value ${type}">${UI.formatRp(value)}</div>
     ${extra}
   </div>`;
