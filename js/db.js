@@ -352,6 +352,12 @@ const DB = (() => {
       ? parseFloat((totalUtang / saldoBersih).toFixed(2))
       : (totalUtang > 0 ? Infinity : 0);
 
+    // Today income
+    const todayStr = new Date().toISOString().slice(0,10);
+    const todayIncome = cf
+      .filter(c => c.tanggal === todayStr && c.kategori === 'PENGHASILAN')
+      .reduce((s,c) => s+(c.nominal||0), 0);
+
     return {
       saldoKotor, tripIncome, insentifIncome,
       totalPengeluaran, alokasiServis,
@@ -362,6 +368,7 @@ const DB = (() => {
       rataRataPendapatan, rataRataPengeluaran,
       marginBersih, rasioUtang,
       totalTransaksi: transaksiList.length,
+      todayIncome,
     };
   }
 

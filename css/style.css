@@ -701,3 +701,68 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 
 
 
+/* ===== PHASE 2 — DASHBOARD UPGRADE ===== */
+
+/* 30-day chart + side col layout */
+.db-chart-row {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+.db-line-card { padding: 18px 20px; }
+.db-line-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
+.db-side-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* Week comparison card */
+.db-week-card { padding: 18px; }
+.db-week-row { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.db-week-item { flex: 1; }
+.db-week-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.db-week-val { font-size: 1.05rem; font-weight: 800; margin-bottom: 2px; }
+.db-week-days { font-size: 0.7rem; color: var(--text-muted); }
+.db-week-arrow { font-size: 1rem; font-weight: 800; padding: 6px 10px; border-radius: 99px; text-align: center; flex-shrink: 0; }
+.db-week-arrow.up { background: var(--success-glow); color: var(--success); }
+.db-week-arrow.down { background: var(--danger-glow); color: var(--danger); }
+
+/* Target card */
+.db-target-card { padding: 18px; }
+.db-target-val { font-size: 1.3rem; font-weight: 800; }
+
+/* Heatmap */
+.db-heatmap { margin-bottom: 8px; }
+.db-heatmap-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 3px; }
+.db-hd-label { text-align: center; font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
+.db-heatmap-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.db-hm-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.7);
+  cursor: default; transition: transform 0.15s ease;
+  position: relative;
+}
+.db-hm-cell:hover { transform: scale(1.15); z-index: 2; }
+.db-hm-cell.empty { background: transparent; }
+.db-hm-cell.today { outline: 2px solid var(--success); outline-offset: 1px; }
+[data-theme="light"] .db-hm-cell { color: rgba(0,0,0,0.5); }
+.db-heatmap-legend { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.db-heatmap-legend span { font-size: 0.68rem; color: var(--text-muted); }
+.db-legend-bar { flex: 1; height: 5px; border-radius: 99px; background: linear-gradient(90deg, rgba(255,255,255,0.05), var(--primary) 50%, var(--success)); }
+
+/* Quick links */
+.db-quick-links { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 8px; }
+.db-quick-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg-base);
+  color: var(--text-secondary); cursor: pointer; font-size: 1.3rem;
+  font-family: var(--font); transition: all var(--transition);
+}
+.db-quick-btn span { font-size: 0.72rem; font-weight: 600; }
+.db-quick-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); transform: translateY(-2px); }
+
+/* Responsive */
+@media (max-width: 1100px) { .db-chart-row { grid-template-columns: 1fr 280px; } }
+@media (max-width: 900px)  { .db-chart-row { grid-template-columns: 1fr; } }
+@media (max-width: 560px)  { .db-quick-links { grid-template-columns: repeat(3,1fr); } }
