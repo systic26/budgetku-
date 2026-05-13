@@ -86,14 +86,24 @@ Pages.dashboard = {
         </div>
       </div>
 
-      <!-- ROW: Pie chart + Heatmap -->
-      <div class="grid-2 mb-20">
+      <!-- ROW: Pie chart + Stats + Heatmap (3-col) -->
+      <div class="db-bottom-row mb-20">
+        <!-- Pie Chart -->
         <div class="card">
           <div class="card-title mb-8">📊 Distribusi Penghasilan</div>
           <div id="pieChart"></div>
         </div>
+        <!-- Stat rows -->
         <div class="card">
-          <div class="card-title mb-12">🗓️ Kalender Bulan Ini</div>
+          <div class="card-title mb-12">📈 Statistik Operasional</div>
+          <div id="dbStatRows"></div>
+        </div>
+        <!-- Heatmap Calendar -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div class="card-title">🗓️ Kalender Bulan Ini</div>
+            <span class="text-muted" style="font-size:0.7rem">Klik hari untuk detail</span>
+          </div>
           <div class="db-heatmap" id="dbHeatmap"></div>
           <div class="db-heatmap-legend">
             <span>Rp0</span>
@@ -146,6 +156,23 @@ Pages.dashboard = {
     ]);
     this._renderLineChart('dbLineChart', last30.data);
     this._renderHeatmap('dbHeatmap', heatmap, target);
+
+    // Render stat rows in middle card
+    const statRowsEl = document.getElementById('dbStatRows');
+    if (statRowsEl) {
+      const rows = [
+        { label: 'Margin Bersih', val: s.marginBersih.toFixed(2)+'%', c: s.marginBersih>=30?'success':'warning' },
+        { label: 'Rata-rata/Hari', val: UI.formatRp(s.rataRataPendapatan), c: 'primary' },
+        { label: 'Hari Kerja', val: s.hariKerja+' hari', c: 'success' },
+        { label: 'Total Alokasi Servis', val: UI.formatRp(s.alokasiServis), c: 'warning' },
+        { label: 'Total Pengeluaran', val: UI.formatRp(s.totalPengeluaran), c: 'danger' },
+        { label: 'Rasio Utang/Bersih', val: rasioDisplay+'×', c: parseFloat(rasio)>1?'danger':'success' },
+      ];
+      statRowsEl.innerHTML = rows.map(r=>`<div class="db-stat-row-item">
+        <span class="label">${r.label}</span>
+        <span class="val text-${r.c}">${r.val}</span>
+      </div>`).join('');
+    }
   },
 
   _getLast30() {
@@ -190,6 +217,59 @@ Pages.dashboard = {
     };
   },
 
+  _getHoliday(dateStr) {
+    // Indonesian national + religious holidays 2025-2027
+    const H = {
+      // 2025
+      '2025-01-01': 'Tahun Baru Masehi',
+      '2025-01-27': 'Isra Miraj',
+      '2025-01-29': 'Tahun Baru Imlek',
+      '2025-03-29': 'Hari Raya Nyepi',
+      '2025-03-31': 'Idul Fitri 1 Syawal',
+      '2025-04-01': 'Idul Fitri 2 Syawal',
+      '2025-04-18': 'Wafat Yesus Kristus',
+      '2025-04-20': 'Paskah',
+      '2025-05-01': 'Hari Buruh Internasional',
+      '2025-05-12': 'Kenaikan Isa Almasih',
+      '2025-05-13': 'Cuti Bersama Waisak',
+      '2025-05-29': 'Hari Raya Waisak',
+      '2025-06-01': 'Hari Lahir Pancasila',
+      '2025-06-06': 'Idul Adha 1446 H',
+      '2025-06-27': 'Tahun Baru Islam 1447 H',
+      '2025-08-17': 'HUT Kemerdekaan RI ke-80',
+      '2025-09-05': 'Maulid Nabi Muhammad SAW',
+      '2025-12-25': 'Hari Raya Natal',
+      '2025-12-26': 'Cuti Bersama Natal',
+      // 2026
+      '2026-01-01': 'Tahun Baru Masehi',
+      '2026-01-16': 'Isra Miraj 1447 H',
+      '2026-02-17': 'Tahun Baru Imlek 2577',
+      '2026-03-20': 'Idul Fitri 1 Syawal 1447 H',
+      '2026-03-21': 'Idul Fitri 2 Syawal 1447 H',
+      '2026-03-22': 'Cuti Bersama Idul Fitri',
+      '2026-03-23': 'Cuti Bersama Idul Fitri',
+      '2026-04-03': 'Wafat Yesus Kristus',
+      '2026-04-05': 'Hari Raya Nyepi',
+      '2026-05-01': 'Hari Buruh Internasional',
+      '2026-05-14': 'Kenaikan Isa Almasih',
+      '2026-05-25': 'Idul Adha 1447 H',
+      '2026-06-01': 'Hari Lahir Pancasila',
+      '2026-06-04': 'Hari Raya Waisak',
+      '2026-06-16': 'Tahun Baru Islam 1448 H',
+      '2026-08-17': 'HUT Kemerdekaan RI ke-81',
+      '2026-08-26': 'Maulid Nabi Muhammad SAW',
+      '2026-12-25': 'Hari Raya Natal',
+      // 2027
+      '2027-01-01': 'Tahun Baru Masehi',
+      '2027-03-10': 'Idul Fitri 1448 H',
+      '2027-05-01': 'Hari Buruh Internasional',
+      '2027-06-01': 'Hari Lahir Pancasila',
+      '2027-08-17': 'HUT Kemerdekaan RI ke-82',
+      '2027-12-25': 'Hari Raya Natal',
+    };
+    return H[dateStr] || null;
+  },
+
   _getMonthHeatmap() {
     const cf = DB.getCashflow();
     const now = new Date();
@@ -205,7 +285,11 @@ Pages.dashboard = {
     const firstDay = new Date(y, m, 1).getDay();
     const offset = firstDay === 0 ? 6 : firstDay - 1;
     for (let i = 0; i < offset; i++) result.push(null);
-    for (let d = 1; d <= daysInMonth; d++) result.push({ day: d, value: map[d]||0, isToday: d===now.getDate() });
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const holiday = this._getHoliday(dStr);
+      result.push({ day: d, value: map[d]||0, isToday: d===now.getDate(), holiday });
+    }
     return result;
   },
 
@@ -257,6 +341,7 @@ Pages.dashboard = {
     if (!el) return;
     const now = new Date();
     const y = now.getFullYear(), m = now.getMonth();
+    const monthNames = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
     const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
     el.innerHTML = `
       <div class="db-heatmap-days">${dayLabels.map(d=>`<div class="db-hd-label">${d}</div>`).join('')}</div>
@@ -264,16 +349,18 @@ Pages.dashboard = {
         ${cells.map((c,i) => {
           if (!c) return `<div class="db-hm-cell empty"></div>`;
           const pct = Math.min(1, c.value / target);
-          const color = pct >= 1 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : c.value > 0 ? 'var(--primary)' : 'rgba(255,255,255,0.04)';
+          const color = pct >= 1 ? 'var(--success)' : pct >= 0.5 ? 'var(--warning)' : c.value > 0 ? 'var(--primary)' : c.holiday ? 'rgba(255,200,0,0.10)' : 'rgba(255,255,255,0.04)';
           const opacity = c.value === 0 ? 1 : 0.2 + pct * 0.8;
           const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
           const isFuture = new Date(dStr+'T00:00:00') > now && !c.isToday;
+          const titleText = `${c.day} ${monthNames[m]}${c.holiday ? '\n🎉 ' + c.holiday : ''}${c.value > 0 ? '\n' + UI.formatRp(c.value) : ''}`;
           return `<div
-            class="db-hm-cell ${c.isToday?'today':''} ${isFuture?'future':'clickable'}"
-            style="background:${color};opacity:${opacity};animation-delay:${i*12}ms"
-            title="${c.day} ${['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][m]}: ${c.value>0?UI.formatRp(c.value):'Tidak ada data'}"
+            class="db-hm-cell ${c.isToday?'today':''} ${isFuture?'future':'clickable'}${c.holiday?' holiday':''}"
+            style="background:${color};opacity:${opacity};animation-delay:${i*10}ms"
+            title="${titleText.replace(/"/g,"'")}"
             ${!isFuture ? `onclick="Pages.dashboard._showDayDetail('${dStr}')"` : ''}>
             <span class="db-hm-num">${c.day}</span>
+            ${c.holiday ? '<span class="db-hm-holiday-dot"></span>' : ''}
           </div>`;
         }).join('')}
       </div>`;
@@ -284,6 +371,7 @@ Pages.dashboard = {
     const trxs = DB.getTransaksi().filter(t => t.tanggal === dateStr);
     const peng = DB.getPengeluaran ? DB.getPengeluaran().filter(p => p.tanggal === dateStr) : [];
     const serv = DB.getServis().filter(s => s.tanggal === dateStr);
+    const holiday = this._getHoliday(dateStr);
 
     const income = cf.filter(c=>c.kategori==='PENGHASILAN').reduce((s,c)=>s+(c.nominal||0),0);
     const pengeluaran = cf.filter(c=>c.kategori==='PENGELUARAN').reduce((s,c)=>s+(c.nominal||0),0);
@@ -297,6 +385,8 @@ Pages.dashboard = {
 
     // Build timeline events
     const events = [];
+    // 🎉 Holiday always first
+    if (holiday) events.push({ icon:'🎉', label: holiday, detail:'Hari Libur Nasional / Hari Besar', color:'warning', time:'' });
     trxs.forEach(t => {
       const isWork = t.status_operasi === 'WORKING';
       events.push({ icon: isWork?'⚡':'😴', label: isWork?'Hari Kerja':'Hari Libur', detail: isWork?`${t.jumlah_orderan||0} order · ${t.jam_mulai||'--'}–${t.jam_selesai||'--'}`:'Tidak ada aktivitas', color: isWork?'success':'muted', time: t.jam_mulai||'' });
@@ -309,7 +399,11 @@ Pages.dashboard = {
 
     const noData = events.length === 0;
     UI.openModal(`📅 ${dateFormatted}`,
-      `<div class="day-detail-summary">
+      `${holiday ? `<div style="background:rgba(255,200,0,0.1);border:1px solid rgba(255,200,0,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:1.4rem">🎉</span>
+        <div><div style="font-weight:700;font-size:0.88rem;color:#f5c842">${holiday}</div><div style="font-size:0.72rem;color:var(--text-muted)">Hari Libur Nasional Indonesia</div></div>
+      </div>` : ''}
+      <div class="day-detail-summary">
         <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGHASILAN</span><span class="text-success fw-700">${income>0?'+':''} ${UI.formatRp(income)}</span></div>
         <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">PENGELUARAN</span><span class="text-danger fw-700">${pengeluaran>0?'-':''} ${UI.formatRp(pengeluaran)}</span></div>
         <div class="day-sum-item"><span class="text-muted" style="font-size:0.7rem">ALOKASI SERVIS</span><span class="text-warning fw-700">${UI.formatRp(alokasi)}</span></div>
