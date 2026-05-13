@@ -14,12 +14,17 @@ const DB = (() => {
     settings:     'bk_settings',
   };
 
-  /* ---- SUPABASE SYNC SETUP ---- */
+  /* ---- SUPABASE SETUP ---- */
   const SUPABASE_URL = 'https://yabxsvdehmgsujtzbdar.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhYnhzdmRlaG1nc3VqdHpiZGFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MTk0MjcsImV4cCI6MjA5NDA5NTQyN30.ubyyNwzKqsw-UW-PqhRPGjiAPd9M1UUSSihgJ8G68R8';
   let supabase = null;
   if (window.supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      }
+    });
   }
 
   function _sync(table, data, action = 'UPSERT') {
@@ -105,7 +110,7 @@ const DB = (() => {
     const rules = getAlokasiRules();
     const idx = rules.findIndex(r => r.id === rule.id);
     if (idx >= 0) rules[idx] = rule;
-    else rules.push({ ...rule, id: _nextId(rules) });
+    else rules.push({ ...rule, id: _nextId() });
     _save(KEYS.alokasi, rules);
   }
 
@@ -306,12 +311,12 @@ const DB = (() => {
     // Penghasilan dari trip
     const tripIncome = cf
       .filter(c => c.source_type === 'TRIP' && c.kategori === 'PENGHASILAN')
-      .reduce((s, c) => s + c.nominal, 0);
+      .reduce((s, c) => s + (c.nominal || 0), 0);
 
     // Penghasilan dari insentif
     const insentifIncome = cf
       .filter(c => c.source_type === 'INCENTIVE' && c.kategori === 'PENGHASILAN')
-      .reduce((s, c) => s + c.nominal, 0);
+      .reduce((s, c) => s + (c.nominal || 0), 0);
 
     // Total penghasilan kotor
     const saldoKotor = tripIncome + insentifIncome;
@@ -319,12 +324,12 @@ const DB = (() => {
     // Total pengeluaran operasional (bukan servis)
     const totalPengeluaran = cf
       .filter(c => c.kategori === 'PENGELUARAN')
-      .reduce((s, c) => s + c.nominal, 0);
+      .reduce((s, c) => s + (c.nominal || 0), 0);
 
     // Alokasi servis (keluar dari saldo operasional)
     const alokasiServis = cf
       .filter(c => c.source_type === 'SERVIS_ALLOC')
-      .reduce((s, c) => s + c.nominal, 0);
+      .reduce((s, c) => s + (c.nominal || 0), 0);
 
     // Saldo bersih = kotor - pengeluaran - alokasi servis
     const saldoBersih = saldoKotor - totalPengeluaran - alokasiServis;
@@ -334,7 +339,7 @@ const DB = (() => {
 
     // Utang
     const utangList = getUtang();
-    const totalUtang = utangList.filter(u => !u.lunas).reduce((s, u) => s + u.nominal, 0);
+    const totalUtang = utangList.filter(u => !u.lunas).reduce((s, u) => s + (u.nominal || 0), 0);
 
     // Statistik
     const transaksiList = getTransaksi();
@@ -342,8 +347,10 @@ const DB = (() => {
     const rataRataPendapatan = hariKerja > 0 ? saldoKotor / hariKerja : 0;
     const totalHari = transaksiList.length;
     const rataRataPengeluaran = totalHari > 0 ? totalPengeluaran / totalHari : 0;
-    const marginBersih = saldoKotor > 0 ? ((saldoBersih / saldoKotor) * 100).toFixed(2) : '0.00';
-    const rasioUtang = saldoBersih > 0 ? (totalUtang / saldoBersih).toFixed(2) : '0.00';
+    const marginBersih = saldoKotor > 0 ? parseFloat(((saldoBersih / saldoKotor) * 100).toFixed(2)) : 0;
+    const rasioUtang = saldoBersih > 0
+      ? parseFloat((totalUtang / saldoBersih).toFixed(2))
+      : (totalUtang > 0 ? Infinity : 0);
 
     return {
       saldoKotor, tripIncome, insentifIncome,
@@ -358,44 +365,56 @@ const DB = (() => {
     };
   }
 
-  /* ---- AUTH / USERS ---- */
-  const KEYS_AUTH = {
-    users: 'bk_users',
-    currentUser: 'bk_current_user'
-  };
+  /* ---- AUTH — Supabase Auth ---- */
 
-  function getUsers() {
-    return _load(KEYS_AUTH.users);
+  /**
+   * Daftar akun baru.
+   * @param {string} email   - Alamat email (dipakai sebagai login credential)
+   * @param {string} password
+   * @param {string} fullName - Nama lengkap (disimpan di user_metadata)
+   * @returns {Promise<object>} user object
+   */
+  async function registerUser(email, password, fullName) {
+    if (!supabase) throw new Error('Supabase tidak tersedia. Periksa koneksi internet.');
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (error) throw new Error(error.message);
+    return data.user;
   }
 
-  function registerUser(username, password, fullName) {
-    const users = getUsers();
-    if (users.find(u => u.username === username)) {
-      throw new Error('Username sudah terdaftar');
-    }
-    const newUser = { id: _nextId(), username, password, full_name: fullName, created_at: new Date().toISOString() };
-    users.push(newUser);
-    _save(KEYS_AUTH.users, users);
-    _sync('users', newUser);
-    return newUser;
+  /**
+   * Login dengan email & password.
+   * @param {string} email
+   * @param {string} password
+   * @returns {Promise<object>} user object
+   */
+  async function loginUser(email, password) {
+    if (!supabase) throw new Error('Supabase tidak tersedia. Periksa koneksi internet.');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    return data.user;
   }
 
-  function loginUser(username, password) {
-    const users = getUsers();
-    const user = users.find(u => u.username === username && u.password === password);
-    if (!user) {
-      throw new Error('Username atau password salah');
-    }
-    _save(KEYS_AUTH.currentUser, user);
-    return user;
+  /**
+   * Ambil user yang sedang login (dari sesi Supabase).
+   * @returns {Promise<object|null>}
+   */
+  async function getCurrentUser() {
+    if (!supabase) return null;
+    const { data } = await supabase.auth.getUser();
+    return data?.user ?? null;
   }
 
-  function getCurrentUser() {
-    return _loadObj(KEYS_AUTH.currentUser, null);
-  }
-
-  function logoutUser() {
-    localStorage.removeItem(KEYS_AUTH.currentUser);
+  /**
+   * Logout dari Supabase.
+   * @returns {Promise<void>}
+   */
+  async function logoutUser() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
   }
 
   return {
@@ -409,5 +428,7 @@ const DB = (() => {
     getUtang, insertUtang, updateUtang, deleteUtang,
     getDashboardSummary,
     registerUser, loginUser, getCurrentUser, logoutUser,
+    // Expose Supabase client untuk listener di app.js
+    getSupabase: () => supabase,
   };
 })();

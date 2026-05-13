@@ -87,8 +87,8 @@ Pages.servis = {
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <span class="text-danger fw-600">${UI.formatRp(s.biaya)}</span>
-              <button class="btn-icon edit" onclick="Pages.servis._edit(${s.id})">✏️</button>
-              <button class="btn-icon danger" onclick="Pages.servis._delete(${s.id})">🗑</button>
+              <button class="btn-icon edit" onclick="Pages.servis._edit('${s.id}')">✏️</button>
+              <button class="btn-icon danger" onclick="Pages.servis._delete('${s.id}')">🗑</button>
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@ Pages.servis = {
         <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="esKet" class="form-control" value="${s.keterangan || ''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="Pages.servis._saveEdit(${id})">Simpan</button>`);
+        <button class="btn btn-primary" onclick="Pages.servis._saveEdit('${id}')">Simpan</button>`);
   },
 
   _saveEdit(id) {

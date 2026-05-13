@@ -141,10 +141,14 @@ Pages.pengaturan = {
       alokasi: DB.getAlokasiRules(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = url;
     a.download = `budgetku_backup_${UI.todayISO()}.json`;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     UI.toast('Data berhasil diekspor ✅', 'success');
   },
 

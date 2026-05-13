@@ -3,7 +3,7 @@ Pages.pengeluaran = {
   render() {
     const el = document.getElementById('page-pengeluaran');
     const list = DB.getPengeluaran();
-    const total = list.reduce((s, p) => s + p.nominal, 0);
+    const total = list.reduce((s, p) => s + (p.nominal || 0), 0);
     el.innerHTML = `
       <div class="grid-2">
         <!-- Form -->
@@ -75,8 +75,8 @@ Pages.pengeluaran = {
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span class="text-danger fw-600">${UI.formatRp(p.nominal)}</span>
-            <button class="btn-icon edit" onclick="Pages.pengeluaran._edit(${p.id})">✏️</button>
-            <button class="btn-icon danger" onclick="Pages.pengeluaran._delete(${p.id})">🗑</button>
+            <button class="btn-icon edit" onclick="Pages.pengeluaran._edit('${p.id}')">✏️</button>
+            <button class="btn-icon danger" onclick="Pages.pengeluaran._delete('${p.id}')">🗑</button>
           </div>
         </div>
       `).join('')}
@@ -103,7 +103,7 @@ Pages.pengeluaran = {
         <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="epKet" class="form-control" value="${p.keterangan || ''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="Pages.pengeluaran._saveEdit(${id})">Simpan</button>`);
+        <button class="btn btn-primary" onclick="Pages.pengeluaran._saveEdit('${id}')">Simpan</button>`);
   },
 
   _saveEdit(id) {

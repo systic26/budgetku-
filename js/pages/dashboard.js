@@ -6,13 +6,14 @@ Pages.dashboard = {
     const s = DB.getDashboardSummary();
     const ds = s.danaServis;
     const dsPct = ds.masuk > 0 ? Math.round((ds.keluar / ds.masuk) * 100) : 0;
-    const rasio = parseFloat(s.rasioUtang);
+    const rasio = s.rasioUtang;
     const debtWarn = rasio > 1.0;
+    const rasioDisplay = isFinite(rasio) ? rasio.toFixed(2) : '∞';
 
     el.innerHTML = `
       ${debtWarn ? `<div class="alert-debt">
         <div class="alert-debt-icon">🚨</div>
-        <div class="alert-debt-text">Rasio Utang/Bersih ${rasio}× — Utang melebihi saldo bersih Anda! Harap segera dilunasi.</div>
+        <div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}× — Utang melebihi saldo bersih Anda! Harap segera dilunasi.</div>
       </div>` : ''}
 
       <!-- STAT CARDS ROW 1 -->
@@ -30,7 +31,7 @@ Pages.dashboard = {
             <div class="progress-bar"><div class="progress-fill ${dsPct > 80 ? 'danger' : 'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div>
           </div><div class="stat-meta mt-4" style="font-size:0.7rem;color:var(--text-muted)">⚠ Alokasi hanya dari hari kerja</div>`)}
         ${statCard('danger', '🏦', 'Total Utang', s.totalUtang,
-          `<div class="stat-meta">Rasio Utang/Bersih: ${s.rasioUtang}×</div>`)}
+          `<div class="stat-meta">Rasio Utang/Bersih: ${rasioDisplay}×</div>`)}
       </div>
 
       <!-- ROW 2: Charts + Stats -->
@@ -45,12 +46,12 @@ Pages.dashboard = {
         <div class="card">
           <div class="card-title">📈 Statistik Operasional</div>
           <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
-            ${statRow('Margin Bersih', s.marginBersih + '%', s.marginBersih >= 30 ? 'success' : 'warning')}
+            ${statRow('Margin Bersih', s.marginBersih.toFixed(2) + '%', s.marginBersih >= 30 ? 'success' : 'warning')}
             ${statRow('Rata-rata Pendapatan/Hari', UI.formatRp(s.rataRataPendapatan), 'primary')}
             ${statRow('Rata-rata Pengeluaran/Hari', UI.formatRp(s.rataRataPengeluaran), 'warning')}
             ${statRow('Total Hari Kerja', s.hariKerja + ' hari', 'success')}
             ${statRow('Total Alokasi Servis', UI.formatRp(s.alokasiServis), 'warning')}
-            ${statRow('Rasio Utang/Bersih', s.rasioUtang + '×', rasio > 1 ? 'danger' : 'success')}
+            ${statRow('Rasio Utang/Bersih', rasioDisplay + '×', rasio > 1 ? 'danger' : 'success')}
           </div>
         </div>
       </div>
@@ -84,7 +85,7 @@ Pages.dashboard = {
         <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="etKet" class="form-control" value="${t.keterangan || ''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="Pages.dashboard._saveEditTransaksi(${id})">Simpan</button>`);
+        <button class="btn btn-primary" onclick="Pages.dashboard._saveEditTransaksi('${id}')">Simpan</button>`);
   },
 
   _saveEditTransaksi(id) {
@@ -94,13 +95,18 @@ Pages.dashboard = {
     const insentif = parseFloat(document.getElementById('etInsentif').value) || 0;
     const keterangan = document.getElementById('etKet').value;
     
+    // Get original for jam fields
+    const orig = DB.getTransaksiById(id);
+    const jam_mulai = orig ? orig.jam_mulai : '';
+    const jam_selesai = orig ? orig.jam_selesai : '';
+    
     // Delete old
     DB.deleteTransaksi(id);
     
     // Insert new
     Engine.prosesTransaksi({
       tanggal,
-      jam_mulai: '00:00', jam_selesai: '00:00',
+      jam_mulai, jam_selesai,
       jumlah_orderan, penghasilan_kotor, insentif, keterangan,
       status_override: jumlah_orderan > 0 ? 'WORKING' : 'OFF'
     });
@@ -159,8 +165,8 @@ function renderRecentTransaksi() {
           <td class="text-primary fw-600">${t.insentif > 0 ? UI.formatRp(t.insentif) : '<span class="text-muted">-</span>'}</td>
           <td class="text-warning">${alok > 0 ? UI.formatRp(alok) : '<span class="text-muted">-</span>'}</td>
           <td style="text-align:right">
-            <button class="btn-icon edit" onclick="Pages.dashboard._editTransaksi(${t.id})">✏️</button>
-            <button class="btn-icon danger" onclick="Pages.dashboard._deleteTransaksi(${t.id})">🗑</button>
+            <button class="btn-icon edit" onclick="Pages.dashboard._editTransaksi('${t.id}')">✏️</button>
+            <button class="btn-icon danger" onclick="Pages.dashboard._deleteTransaksi('${t.id}')">🗑</button>
           </td>
         </tr>`;
       }).join('')}

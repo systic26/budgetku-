@@ -4,10 +4,10 @@ Pages.utang = {
     const el = document.getElementById('page-utang');
     const list = DB.getUtang();
     const aktif = list.filter(u => !u.lunas);
-    const totalAktif = aktif.reduce((s, u) => s + u.nominal, 0);
+    const totalAktif = aktif.reduce((s, u) => s + (u.nominal || 0), 0);
     const saldoBersih = DB.getDashboardSummary().saldoBersih;
-    const rasio = saldoBersih > 0 ? (totalAktif / saldoBersih).toFixed(2) : '∞';
-    const warn = parseFloat(rasio) > 1.0;
+    const rasio = saldoBersih > 0 ? (totalAktif / saldoBersih).toFixed(2) : (totalAktif > 0 ? '∞' : '0.00');
+    const warn = rasio === '∞' || parseFloat(rasio) > 1.0;
 
     el.innerHTML = `
       ${warn ? `<div class="alert-debt mb-24">
@@ -97,9 +97,9 @@ Pages.utang = {
             <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
               <span class="${u.lunas ? 'text-muted' : 'text-danger'} fw-600">${UI.formatRp(u.nominal)}</span>
               <div style="display:flex;gap:4px">
-                ${!u.lunas ? `<button class="btn btn-sm btn-success" onclick="Pages.utang._lunas(${u.id})">✓ Lunas</button>` : '<span class="badge badge-success">Lunas</span>'}
-                <button class="btn-icon edit" onclick="Pages.utang._edit(${u.id})">✏️</button>
-                <button class="btn-icon danger" onclick="Pages.utang._delete(${u.id})">🗑</button>
+                ${!u.lunas ? `<button class="btn btn-sm btn-success" onclick="Pages.utang._lunas('${u.id}')">✓ Lunas</button>` : '<span class="badge badge-success">Lunas</span>'}
+                <button class="btn-icon edit" onclick="Pages.utang._edit('${u.id}')">✏️</button>
+                <button class="btn-icon danger" onclick="Pages.utang._delete('${u.id}')">🗑</button>
               </div>
             </div>
           </div>
@@ -125,7 +125,7 @@ Pages.utang = {
         <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="euKet" class="form-control" value="${u.keterangan || ''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="Pages.utang._saveEdit(${id})">Simpan</button>`);
+        <button class="btn btn-primary" onclick="Pages.utang._saveEdit('${id}')">Simpan</button>`);
   },
 
   _saveEdit(id) {

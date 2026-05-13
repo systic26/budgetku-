@@ -56,8 +56,8 @@ Pages.riwayat = {
             </td>
             <td class="text-muted fs-sm">${c.keterangan || '-'}</td>
             <td class="text-right" style="white-space:nowrap">
-              <button class="btn-icon edit" onclick="Pages.riwayat._edit(${c.id})">✏️</button>
-              <button class="btn-icon danger" onclick="Pages.riwayat._delete(${c.id})">🗑</button>
+              <button class="btn-icon edit" onclick="Pages.riwayat._edit('${c.id}')">✏️</button>
+              <button class="btn-icon danger" onclick="Pages.riwayat._delete('${c.id}')">🗑</button>
             </td>
           </tr>`;
         }).join('')}
@@ -77,7 +77,7 @@ Pages.riwayat = {
         <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="ecfKet" class="form-control" value="${c.keterangan || ''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
-        <button class="btn btn-primary" onclick="Pages.riwayat._saveEdit(${id})">Simpan</button>`);
+        <button class="btn btn-primary" onclick="Pages.riwayat._saveEdit('${id}')">Simpan</button>`);
   },
 
   _saveEdit(id) {

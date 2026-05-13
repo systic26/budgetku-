@@ -2,39 +2,34 @@
  * APP — Main application bootstrap & event bindings
  */
 
-/* ===== CLEAR ALL DEMO DATA (one-time reset) ===== */
-(function clearDemoData() {
-  // Hapus semua data demo agar user bisa mulai dari awal
-  const cleared = localStorage.getItem('bk_cleared_v1');
-  if (!cleared) {
-    ['bk_transaksi','bk_cashflow','bk_dana_servis','bk_servis',
-     'bk_pengeluaran','bk_utang', 'bk_current_user'].forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('bk_cleared_v1', '1');
+/* ===== CLEAR LEGACY AUTH DATA (one-time reset) ===== */
+(function clearLegacyAuth() {
+  // Hapus data auth lama (localStorage) karena sekarang pakai Supabase Auth
+  const migrated = localStorage.getItem('bk_migrated_supabase_auth_v1');
+  if (!migrated) {
+    ['bk_users', 'bk_current_user'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('bk_migrated_supabase_auth_v1', '1');
   }
 }());
 
 /* ===== AUTH FLOW ===== */
-function checkAuth() {
-  const user = DB.getCurrentUser();
-  const authWrapper = document.getElementById('auth-wrapper');
-  const appWrapper = document.getElementById('app-wrapper');
-  
-  if (!user) {
-    authWrapper.style.display = 'flex';
-    appWrapper.style.display = 'none';
-  } else {
-    authWrapper.style.display = 'none';
-    appWrapper.style.display = 'block';
-    
-    // Set nama driver default jika belum diset
-    const settings = DB.getSettings();
-    if (settings.nama_driver === 'Driver') {
-        DB.saveSettings({nama_driver: user.full_name});
-    }
-    
-    // Render initial page
-    UI.navigateTo('dashboard');
+function showApp(user) {
+  document.getElementById('auth-wrapper').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+
+  // Set nama driver dari metadata Supabase
+  const fullName = user.user_metadata?.full_name || user.email || 'Driver';
+  const settings = DB.getSettings();
+  if (settings.nama_driver === 'Driver') {
+    DB.saveSettings({ nama_driver: fullName });
   }
+
+  UI.navigateTo('dashboard');
+}
+
+function showLogin() {
+  document.getElementById('auth-wrapper').style.display = 'flex';
+  document.getElementById('app-wrapper').style.display = 'none';
 }
 
 function bindAuthEvents() {
@@ -51,42 +46,64 @@ function bindAuthEvents() {
   });
 
   // Login
-  document.getElementById('formLogin').addEventListener('submit', (e) => {
+  document.getElementById('formLogin').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const u = document.getElementById('logUser').value;
-    const p = document.getElementById('logPass').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    const email = document.getElementById('logUser').value.trim();
+    const pass  = document.getElementById('logPass').value;
+    btn.disabled = true;
+    btn.textContent = 'Masuk...';
     try {
-      DB.loginUser(u, p);
-      UI.toast('Login Berhasil', 'success');
+      await DB.loginUser(email, pass);
+      // onAuthStateChange akan otomatis panggil showApp()
       document.getElementById('formLogin').reset();
-      checkAuth();
     } catch (err) {
       UI.toast(err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Login';
     }
   });
 
   // Register
-  document.getElementById('formRegister').addEventListener('submit', (e) => {
+  document.getElementById('formRegister').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.getElementById('regName').value;
-    const u = document.getElementById('regUser').value;
-    const p = document.getElementById('regPass').value;
+    const btn = e.target.querySelector('button[type="submit"]');
+    const name  = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regUser').value.trim();
+    const pass  = document.getElementById('regPass').value;
+    btn.disabled = true;
+    btn.textContent = 'Mendaftar...';
     try {
-      DB.registerUser(u, p, name);
-      UI.toast('Pendaftaran Berhasil! Silakan Login.', 'success');
+      await DB.registerUser(email, pass, name);
+      UI.toast('Pendaftaran Berhasil! Silakan cek email untuk konfirmasi, lalu login.', 'success');
       document.getElementById('formRegister').reset();
       document.getElementById('showLogin').click();
     } catch (err) {
       UI.toast(err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Daftar Akun';
     }
   });
 
   // Logout
-  document.getElementById('btnLogout').addEventListener('click', () => {
-    DB.logoutUser();
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await DB.logoutUser();
     UI.toast('Logout Berhasil', 'info');
-    checkAuth();
+    // onAuthStateChange akan otomatis panggil showLogin()
   });
+
+  // Listen perubahan sesi dari Supabase (login, logout, refresh token)
+  const sb = DB.getSupabase();
+  if (sb) {
+    sb.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        showApp(session.user);
+      } else {
+        showLogin();
+      }
+    });
+  }
 }
 
 /* ===== INIT ===== */
@@ -133,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === document.getElementById('modalBackdrop')) UI.closeModal();
   });
 
-  // Init Auth
+  // Init Auth — onAuthStateChange di bindAuthEvents() otomatis handle initial session
   bindAuthEvents();
-  checkAuth();
 });
