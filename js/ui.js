@@ -86,7 +86,8 @@ const UI = (() => {
     const titles = {
       dashboard: 'Dashboard', transaksi: 'Input Transaksi',
       riwayat: 'Riwayat Cashflow', servis: 'Riwayat Servis',
-      pengeluaran: 'Pengeluaran', utang: 'Utang', pengaturan: 'Pengaturan',
+      pengeluaran: 'Pengeluaran', utang: 'Utang',
+      pengaturan: 'Pengaturan', laporan: '📄 Laporan Bulanan',
     };
     document.getElementById('pageTitle').textContent = titles[page] || page;
     // Render page

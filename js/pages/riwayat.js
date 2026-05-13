@@ -47,19 +47,22 @@ Pages.riwayat = {
         <div class="rw-period-tabs" id="rwPeriodTabs">
           ${['semua','hari','minggu','bulan','tahun'].map(p => `
             <button class="rw-tab ${this._activePeriod === p ? 'active' : ''}" data-period="${p}">
-              ${{'semua':'Semua','hari':'Hari Ini','minggu':'Minggu','bulan':'Bulan','tahun':'Tahun'}[p]}
+              ${{ semua:'Semua', hari:'Hari Ini', minggu:'Minggu', bulan:'Bulan', tahun:'Tahun' }[p]}
             </button>
           `).join('')}
         </div>
-        <select class="form-control rw-source-filter" id="rwSourceFilter">
-          <option value="">Semua Tipe</option>
-          <option value="TRIP">Trip</option>
-          <option value="INCENTIVE">Insentif</option>
-          <option value="SERVIS_ALLOC">Alokasi Servis</option>
-          <option value="PENGELUARAN">Pengeluaran</option>
-          <option value="SERVIS">Servis</option>
-          <option value="MANUAL">Manual</option>
-        </select>
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+          <select class="form-control rw-source-filter" id="rwSourceFilter">
+            <option value="">Semua Tipe</option>
+            <option value="TRIP">Trip</option>
+            <option value="INCENTIVE">Insentif</option>
+            <option value="SERVIS_ALLOC">Alokasi Servis</option>
+            <option value="PENGELUARAN">Pengeluaran</option>
+            <option value="SERVIS">Servis</option>
+            <option value="MANUAL">Manual</option>
+          </select>
+          <button class="btn btn-outline btn-sm" id="rwExportBtn" style="white-space:nowrap">⬇️ CSV</button>
+        </div>
       </div>
 
       <!-- TABLE -->
@@ -89,6 +92,24 @@ Pages.riwayat = {
     document.getElementById('rwSourceFilter').addEventListener('change', e => {
       this._activeSource = e.target.value;
       this._applyFilter();
+    });
+
+    document.getElementById('rwExportBtn').addEventListener('click', () => {
+      const data = this._getFilteredData();
+      const headers = ['Tanggal','Tipe','Kategori','Tujuan Dana','Nominal','Keterangan'];
+      const rows = data.map(c => [
+        c.tanggal, c.source_type, c.kategori,
+        c.tujuan_dana||'', c.nominal, (c.keterangan||'').replace(/"/g,"'")
+      ]);
+      const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `budgetku_cashflow_${UI.todayISO()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      UI.toast('CSV berhasil didownload!', 'success');
     });
   },
 

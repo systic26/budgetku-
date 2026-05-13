@@ -4,13 +4,29 @@
 
 /* ===== CLEAR LEGACY AUTH DATA (one-time reset) ===== */
 (function clearLegacyAuth() {
-  // Hapus data auth lama (localStorage) karena sekarang pakai Supabase Auth
   const migrated = localStorage.getItem('bk_migrated_supabase_auth_v1');
   if (!migrated) {
     ['bk_users', 'bk_current_user'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('bk_migrated_supabase_auth_v1', '1');
   }
 }());
+
+/* ===== THEME MANAGEMENT ===== */
+function initTheme() {
+  const saved = localStorage.getItem('bk_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('bk_theme', next);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = next === 'dark' ? '🌙' : '☀️';
+}
 
 /* ===== AUTH FLOW ===== */
 function showApp(user) {
@@ -152,4 +168,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init Auth — onAuthStateChange di bindAuthEvents() otomatis handle initial session
   bindAuthEvents();
+
+  // Init Theme
+  initTheme();
+  const themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
 });
