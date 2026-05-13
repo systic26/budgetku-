@@ -124,13 +124,30 @@ function bindAuthEvents() {
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Set current date and time (realtime)
+  // ===== PREMIUM CLOCK =====
+  let _colonVisible = true;
   function updateTime() {
     const now = new Date();
-    const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('currentDate').innerHTML = 
-      `${dateStr} <br><span style="font-size:1.15rem;font-weight:700;color:var(--primary);margin-top:4px;display:inline-block">${timeStr}</span>`;
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    _colonVisible = !_colonVisible;
+
+    const hhEl = document.getElementById('sbHH');
+    const mmEl = document.getElementById('sbMM');
+    const ssEl = document.getElementById('sbSS');
+    const colon = document.getElementById('sbColon');
+    const dateEl = document.getElementById('sbDate');
+
+    if (hhEl) hhEl.textContent = hh;
+    if (mmEl) mmEl.textContent = mm;
+    if (ssEl) ssEl.textContent = ss;
+    if (colon) colon.style.opacity = _colonVisible ? '1' : '0.3';
+    if (dateEl) {
+      const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      dateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    }
   }
   updateTime();
   setInterval(updateTime, 1000);

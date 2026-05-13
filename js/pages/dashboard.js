@@ -27,16 +27,16 @@ Pages.dashboard = {
           `<div class="stat-breakdown">
             <div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div>
             <div class="breakdown-row"><span class="breakdown-label">Insentif</span><span class="breakdown-val text-primary">${UI.formatRp(s.insentifIncome)}</span></div>
-          </div>`)}
+          </div>`, 'riwayat')}
         ${statCard('success','✅','Saldo Bersih', s.saldoBersih,
-          `<div class="stat-meta">Setelah pengeluaran & alokasi servis</div>`)}
+          `<div class="stat-meta">Setelah pengeluaran & alokasi servis</div>`, 'laporan')}
         ${statCard('warning','🔧','Dana Servis', ds.sisa,
           `<div class="progress-wrap">
             <div class="progress-labels"><span>Terpakai ${dsPct}%</span><span>${UI.formatRp(ds.masuk)} terkumpul</span></div>
             <div class="progress-bar"><div class="progress-fill ${dsPct>80?'danger':'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div>
-          </div>`)}
+          </div>`, 'servis')}
         ${statCard('danger','🏦','Total Utang', s.totalUtang,
-          `<div class="stat-meta">Rasio: ${rasioDisplay}×</div>`)}
+          `<div class="stat-meta">Rasio: ${rasioDisplay}×</div>`, 'utang')}
       </div>
 
       <!-- ROW: 30-day chart + Week comparison -->
@@ -304,10 +304,11 @@ Pages.dashboard = {
   }
 };
 
-function statCard(type, icon, label, value, extra='') {
-  return `<div class="stat-card ${type}">
+function statCard(type, icon, label, value, extra='', navTo='') {
+  const clickable = navTo ? `card-link ripple-host" onclick="UI.navigateTo('${navTo}')` : ``;
+  return `<div class="stat-card ${type} ${clickable ? 'card-link ripple-host' : ''}" ${navTo ? `onclick="UI.navigateTo('${navTo}')" role="button" tabindex="0"` : ''} style="${navTo?'cursor:pointer':''}">
     <div class="stat-icon">${icon}</div>
-    <div class="stat-label">${label}</div>
+    <div class="stat-label">${label}${navTo ? ' <span style="font-size:0.6rem;opacity:0.5">→</span>' : ''}</div>
     <div class="stat-value ${type}">${UI.formatRp(value)}</div>
     ${extra}
   </div>`;

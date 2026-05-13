@@ -23,7 +23,7 @@ Pages.servis = {
 
       <div class="grid-2">
         <!-- Form Servis -->
-        <div class="card">
+        <div class="card form-sticky">
           <div class="card-title mb-16">➕ Catat Pengeluaran Servis</div>
           <form id="formServis">
             <div class="form-group">
@@ -77,23 +77,30 @@ Pages.servis = {
       return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
     if (!list.length) return UI.emptyState('🔧', 'Belum ada riwayat servis');
-    return `<div style="display:flex;flex-direction:column;gap:8px">
-      ${list.map(s => `
-        <div style="padding:10px 12px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border)">
-          <div style="display:flex;justify-content:space-between;align-items:start">
-            <div>
-              <div style="font-weight:600;font-size:0.875rem">${s.nama_servis}</div>
-              <div style="font-size:0.75rem;color:var(--text-muted)">${UI.formatDate(s.tanggal)} ${s.keterangan ? '· ' + s.keterangan : ''}</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="text-danger fw-600">${UI.formatRp(s.biaya)}</span>
-              <button class="btn-icon edit" onclick="Pages.servis._edit('${s.id}')">✏️</button>
-              <button class="btn-icon danger" onclick="Pages.servis._delete('${s.id}')">🗑</button>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
+    return `<div class="table-wrap"><table>
+      <thead><tr><th>Tanggal</th><th>Servis</th><th class="text-right">Biaya</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+        ${list.map(s => `<tr>
+          <td style="white-space:nowrap">
+            <div class="fw-500" style="font-size:0.82rem">${UI.formatDate(s.tanggal)}</div>
+          </td>
+          <td>
+            <div class="fw-600" style="font-size:0.85rem">${s.nama_servis}</div>
+            <div class="text-muted" style="font-size:0.72rem">${s.keterangan||''}</div>
+          </td>
+          <td class="text-right text-warning fw-600" style="white-space:nowrap">${UI.formatRp(s.biaya)}</td>
+          <td class="text-right" style="white-space:nowrap">
+            <button class="btn-icon edit" onclick="Pages.servis._edit('${s.id}')">✏️</button>
+            <button class="btn-icon danger" onclick="Pages.servis._delete('${s.id}')">🗑</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot><tr style="border-top:2px solid var(--border);font-weight:700">
+        <td colspan="2">Total Biaya Servis</td>
+        <td class="text-right text-warning">${UI.formatRp(list.reduce((s,x)=>s+(x.biaya||0),0))}</td>
+        <td></td>
+      </tr></tfoot>
+    </table></div>`;
   },
 
   _edit(id) {

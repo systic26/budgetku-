@@ -97,7 +97,12 @@
       </a>
     </nav>
     <div class="sidebar-footer">
-      <div class="current-date mb-16" id="currentDate"></div>
+      <div class="sb-clock" id="sbClock">
+        <div class="sb-clock-time">
+          <span id="sbHH">00</span><span class="sb-colon" id="sbColon">:</span><span id="sbMM">00</span><span class="sb-colon">:</span><span id="sbSS">00</span>
+        </div>
+        <div class="sb-clock-date" id="sbDate"></div>
+      </div>
       <button class="btn btn-outline btn-full btn-sm" id="btnLogout" style="border-color:var(--danger);color:var(--danger)">🚪 Logout</button>
     </div>
   </aside>
