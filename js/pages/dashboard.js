@@ -21,8 +21,8 @@ Pages.dashboard = {
         <div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}× — Utang melebihi saldo bersih!</div>
       </div>` : ''}
 
-      <!-- STAT CARDS -->
-      <div class="grid-4 mb-20">
+      <!-- STAT CARDS — swipeable strip -->
+      <div class="db-stat-strip" id="dbStatStrip">
         ${statCard('primary','💰','Saldo Kotor', s.saldoKotor,
           `<div class="stat-breakdown">
             <div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div>

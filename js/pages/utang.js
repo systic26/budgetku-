@@ -9,33 +9,43 @@ Pages.utang = {
     const rasio = saldoBersih > 0 ? (totalAktif / saldoBersih).toFixed(2) : (totalAktif > 0 ? '∞' : '0.00');
     const warn = rasio === '∞' || parseFloat(rasio) > 1.0;
 
+    const totalLunas = list.filter(u=>u.lunas).reduce((s,u)=>s+(u.nominal||0),0);
+    const today = UI.todayISO();
+
     el.innerHTML = `
-      ${warn ? `<div class="alert-debt mb-24">
+      ${warn ? `<div class="alert-debt mb-16">
         <div class="alert-debt-icon">🚨</div>
         <div class="alert-debt-text">Rasio Utang/Bersih ${rasio}× — Utang melebihi saldo bersih Anda!</div>
       </div>` : ''}
 
-      <div class="grid-2 mb-24">
-        <div class="stat-card danger">
-          <div class="stat-label">Total Utang Aktif</div>
-          <div class="stat-value danger">${UI.formatRp(totalAktif)}</div>
-          <div class="stat-meta">${aktif.length} tagihan belum lunas</div>
+      <!-- Summary Strip -->
+      <div class="page-summary-strip">
+        <div class="mini-stat">
+          <div class="mini-stat-label">🏦 Total Utang Aktif</div>
+          <div class="mini-stat-val text-danger">${UI.formatRp(totalAktif)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${aktif.length} tagihan belum lunas</div>
         </div>
-        <div class="stat-card ${warn ? 'danger' : 'success'}">
-          <div class="stat-label">Rasio Utang / Saldo Bersih</div>
-          <div class="stat-value ${warn ? 'danger' : 'success'}">${rasio}×</div>
-          <div class="stat-meta">${warn ? '⚠️ Berbahaya! > 1.0' : '✅ Aman (< 1.0)'}</div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">✅ Sudah Dilunasi</div>
+          <div class="mini-stat-val text-success">${UI.formatRp(totalLunas)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${list.filter(u=>u.lunas).length} tagihan lunas</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">⚠️ Rasio Utang</div>
+          <div class="mini-stat-val ${warn?'text-danger':'text-success'}">${rasio}×</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${warn?'⚠️ Berbahaya':'✅ Aman'}</div>
         </div>
       </div>
 
-      <div class="grid-2">
+      <!-- 2-col layout -->
+      <div class="page-2col">
         <!-- Form -->
-        <div class="card">
+        <div class="card page-2col-form">
           <div class="card-title mb-16">➕ Tambah Utang</div>
           <form id="formUtang">
             <div class="form-group">
               <label class="form-label">Tanggal</label>
-              <input type="date" class="form-control" id="utgTanggal" value="${UI.todayISO()}" required />
+              <input type="date" class="form-control" id="utgTanggal" value="${today}" required />
             </div>
             <div class="form-group">
               <label class="form-label">Nama / Sumber Utang</label>
@@ -82,30 +92,42 @@ Pages.utang = {
   _renderList(list) {
     if (!list.length) return UI.emptyState('🏦', 'Belum ada utang tercatat');
     const sortedList = list.slice().sort((a, b) => {
+      if (a.lunas !== b.lunas) return a.lunas ? 1 : -1;
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
       return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
-    return `<div style="display:flex;flex-direction:column;gap:8px;max-height:450px;overflow-y:auto">
-      ${sortedList.map(u => `
-        <div style="padding:10px 12px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid ${u.lunas ? 'var(--border)' : 'rgba(247,111,111,0.2)'}">
-          <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
-            <div style="flex:1">
-              <div style="font-weight:600;font-size:0.83rem;${u.lunas ? 'opacity:0.5;text-decoration:line-through' : ''}">${u.sumber}</div>
-              <div style="font-size:0.72rem;color:var(--text-muted)">${UI.formatDate(u.tanggal)} ${u.jatuh_tempo ? '· Jatuh tempo: ' + UI.formatDate(u.jatuh_tempo) : ''}</div>
-              ${u.keterangan ? `<div style="font-size:0.72rem;color:var(--text-muted)">${u.keterangan}</div>` : ''}
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              <span class="${u.lunas ? 'text-muted' : 'text-danger'} fw-600">${UI.formatRp(u.nominal)}</span>
-              <div style="display:flex;gap:4px">
-                ${!u.lunas ? `<button class="btn btn-sm btn-success" onclick="Pages.utang._lunas('${u.id}')">✓ Lunas</button>` : '<span class="badge badge-success">Lunas</span>'}
-                <button class="btn-icon edit" onclick="Pages.utang._edit('${u.id}')">✏️</button>
-                <button class="btn-icon danger" onclick="Pages.utang._delete('${u.id}')">🗑</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
+    const today = new Date();
+    return `<div class="table-wrap"><table>
+      <thead><tr><th>Tanggal</th><th>Sumber</th><th class="text-right">Nominal</th><th>Jatuh Tempo</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+        ${sortedList.map((u,i) => {
+          const jt = u.jatuh_tempo ? new Date(u.jatuh_tempo+'T00:00:00') : null;
+          const overdue = jt && !u.lunas && jt < today;
+          return `<tr style="animation:fadeInUp 0.2s ease ${i*30}ms both;opacity:${u.lunas?0.55:1}">
+            <td style="white-space:nowrap;font-size:0.82rem">${UI.formatDate(u.tanggal)}</td>
+            <td>
+              <div class="fw-600" style="font-size:0.85rem;${u.lunas?'text-decoration:line-through':''};">${u.sumber}</div>
+              ${u.keterangan?`<div class="text-muted" style="font-size:0.72rem">${u.keterangan}</div>`:''}
+            </td>
+            <td class="text-right fw-600 ${u.lunas?'text-muted':'text-danger'}">${UI.formatRp(u.nominal)}</td>
+            <td style="white-space:nowrap;font-size:0.8rem">
+              ${jt ? `<span class="${overdue?'text-danger fw-600':'text-muted'}">${overdue?'⚠️ ':''} ${UI.formatDate(u.jatuh_tempo)}</span>` : '<span class="text-muted">—</span>'}
+            </td>
+            <td>${u.lunas?'<span class="badge badge-success">✅ Lunas</span>':'<span class="badge badge-danger">Aktif</span>'}</td>
+            <td class="text-right" style="white-space:nowrap">
+              ${!u.lunas?`<button class="btn btn-sm btn-success" onclick="Pages.utang._lunas('${u.id}')">Lunas</button>`:''}
+              <button class="btn-icon edit" onclick="Pages.utang._edit('${u.id}')">✏️</button>
+              <button class="btn-icon danger" onclick="Pages.utang._delete('${u.id}')">🗑</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot><tr style="font-weight:700;border-top:2px solid var(--border)">
+        <td colspan="2">TOTAL AKTIF</td>
+        <td class="text-right text-danger">${UI.formatRp(list.filter(u=>!u.lunas).reduce((s,u)=>s+(u.nominal||0),0))}</td>
+        <td colspan="3"></td>
+      </tr></tfoot>
+    </table></div>`;
   },
 
   _lunas(id) {

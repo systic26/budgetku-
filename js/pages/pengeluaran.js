@@ -1,13 +1,39 @@
-/* Pengeluaran Page */
+/* Pengeluaran Page — Balanced Layout */
 Pages.pengeluaran = {
   render() {
     const el = document.getElementById('page-pengeluaran');
     const list = DB.getPengeluaran();
     const total = list.reduce((s, p) => s + (p.nominal || 0), 0);
+
+    // Per-kategori breakdown
+    const byKat = {};
+    list.forEach(p => { byKat[p.kategori] = (byKat[p.kategori]||0) + (p.nominal||0); });
+    const topKat = Object.entries(byKat).sort((a,b) => b[1]-a[1])[0];
+
     el.innerHTML = `
-      <div class="grid-2">
+      <!-- Summary Strip -->
+      <div class="page-summary-strip">
+        <div class="mini-stat">
+          <div class="mini-stat-label">💸 Total Pengeluaran</div>
+          <div class="mini-stat-val text-danger">${UI.formatRp(total)}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${list.length} transaksi</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">📌 Terbesar</div>
+          <div class="mini-stat-val text-warning">${topKat ? topKat[0] : '-'}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${topKat ? UI.formatRp(topKat[1]) : ''}</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">📅 Bulan Ini</div>
+          <div class="mini-stat-val text-primary">${UI.formatRp(this._monthTotal(list))}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">dari ${this._monthCount(list)} entri</div>
+        </div>
+      </div>
+
+      <!-- 2-col: Form + List -->
+      <div class="page-2col">
         <!-- Form -->
-        <div class="card">
+        <div class="card page-2col-form">
           <div class="card-title mb-16">➕ Catat Pengeluaran</div>
           <form id="formPengeluaran">
             <div class="form-group">
@@ -34,11 +60,26 @@ Pages.pengeluaran = {
             </div>
             <button type="submit" class="btn btn-danger btn-full">💸 Simpan Pengeluaran</button>
           </form>
+
+          <!-- Breakdown per kategori -->
+          ${Object.keys(byKat).length ? `
+          <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:10px">Breakdown Kategori</div>
+            ${Object.entries(byKat).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:0.8rem">${k}</span>
+                <span class="text-danger fw-600" style="font-size:0.82rem">${UI.formatRp(v)}</span>
+              </div>
+              <div class="progress-bar" style="margin-bottom:8px">
+                <div class="progress-fill danger" style="width:${Math.round((v/total)*100)}%"></div>
+              </div>
+            `).join('')}
+          </div>` : ''}
         </div>
 
         <!-- List -->
         <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <div class="card-title">💸 Riwayat Pengeluaran</div>
             <span class="text-danger fw-600">${UI.formatRp(total)}</span>
           </div>
@@ -49,9 +90,9 @@ Pages.pengeluaran = {
 
     document.getElementById('formPengeluaran').addEventListener('submit', e => {
       e.preventDefault();
-      const tanggal = document.getElementById('pngTanggal').value;
-      const kategori = document.getElementById('pngKategori').value;
-      const nominal = parseFloat(document.getElementById('pngNominal').value) || 0;
+      const tanggal   = document.getElementById('pngTanggal').value;
+      const kategori  = document.getElementById('pngKategori').value;
+      const nominal   = parseFloat(document.getElementById('pngNominal').value) || 0;
       const keterangan = document.getElementById('pngKet').value || kategori;
       if (!nominal) return UI.toast('Nominal wajib diisi', 'error');
       DB.insertPengeluaran({ tanggal, kategori, nominal, keterangan });
@@ -60,27 +101,41 @@ Pages.pengeluaran = {
     });
   },
 
+  _monthTotal(list) {
+    const prefix = new Date().toISOString().slice(0,7);
+    return list.filter(p => p.tanggal?.startsWith(prefix)).reduce((s,p)=>s+(p.nominal||0),0);
+  },
+  _monthCount(list) {
+    const prefix = new Date().toISOString().slice(0,7);
+    return list.filter(p => p.tanggal?.startsWith(prefix)).length;
+  },
+
   _renderList(list) {
     const rev = list.slice().sort((a, b) => {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
       return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
-    if (!rev.length) return UI.emptyState('💸', 'Belum ada pengeluaran');
-    return `<div style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto">
-      ${rev.map(p => `
-        <div style="padding:9px 12px;background:var(--bg-base);border-radius:var(--radius-sm);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-weight:600;font-size:0.83rem">${p.kategori}</div>
-            <div style="font-size:0.72rem;color:var(--text-muted)">${UI.formatDate(p.tanggal)} ${p.keterangan ? '· ' + p.keterangan : ''}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="text-danger fw-600">${UI.formatRp(p.nominal)}</span>
+    if (!rev.length) return UI.emptyState('💸', 'Belum ada pengeluaran dicatat');
+    return `<div class="table-wrap"><table>
+      <thead><tr><th>Tanggal</th><th>Kategori</th><th class="text-right">Nominal</th><th>Keterangan</th><th class="text-right">Aksi</th></tr></thead>
+      <tbody>
+        ${rev.map((p,i) => `<tr style="animation:fadeInUp 0.2s ease ${i*30}ms both">
+          <td style="white-space:nowrap;font-size:0.82rem">${UI.formatDate(p.tanggal)}</td>
+          <td><span class="badge badge-danger" style="font-size:0.68rem">${p.kategori}</span></td>
+          <td class="text-right text-danger fw-600">${UI.formatRp(p.nominal)}</td>
+          <td class="text-muted" style="font-size:0.78rem;max-width:150px;word-break:break-word">${p.keterangan||'-'}</td>
+          <td class="text-right" style="white-space:nowrap">
             <button class="btn-icon edit" onclick="Pages.pengeluaran._edit('${p.id}')">✏️</button>
             <button class="btn-icon danger" onclick="Pages.pengeluaran._delete('${p.id}')">🗑</button>
-          </div>
-        </div>
-      `).join('')}
-    </div>`;
+          </td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot><tr style="font-weight:700;border-top:2px solid var(--border)">
+        <td colspan="2">TOTAL</td>
+        <td class="text-right text-danger">${UI.formatRp(list.reduce((s,p)=>s+(p.nominal||0),0))}</td>
+        <td colspan="2"></td>
+      </tr></tfoot>
+    </table></div>`;
   },
 
   _edit(id) {
@@ -92,27 +147,22 @@ Pages.pengeluaran = {
         <div class="form-group">
           <label class="form-label">Kategori</label>
           <select id="epKategori" class="form-control">
-            <option value="Bensin" ${p.kategori==='Bensin'?'selected':''}>Bensin</option>
-            <option value="Pulsa/Data" ${p.kategori==='Pulsa/Data'?'selected':''}>Pulsa/Data</option>
-            <option value="Makan" ${p.kategori==='Makan'?'selected':''}>Makan</option>
-            <option value="Parkir" ${p.kategori==='Parkir'?'selected':''}>Parkir</option>
-            <option value="Lainnya" ${p.kategori==='Lainnya'?'selected':''}>Lainnya</option>
+            ${['Bensin','Pulsa/Data','Makan','Parkir','Lainnya'].map(k=>`<option value="${k}" ${p.kategori===k?'selected':''}>${k}</option>`).join('')}
           </select>
         </div>
         <div class="form-group"><label class="form-label">Nominal (Rp)</label><input type="number" id="epNominal" class="form-control" value="${p.nominal}" required></div>
-        <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="epKet" class="form-control" value="${p.keterangan || ''}"></div>
+        <div class="form-group"><label class="form-label">Keterangan</label><input type="text" id="epKet" class="form-control" value="${p.keterangan||''}"></div>
       </form>
     `, `<button class="btn btn-outline" onclick="UI.closeModal()">Batal</button>
         <button class="btn btn-primary" onclick="Pages.pengeluaran._saveEdit('${id}')">Simpan</button>`);
   },
 
   _saveEdit(id) {
-    const tanggal = document.getElementById('epTanggal').value;
-    const kategori = document.getElementById('epKategori').value;
-    const nominal = parseFloat(document.getElementById('epNominal').value) || 0;
+    const tanggal    = document.getElementById('epTanggal').value;
+    const kategori   = document.getElementById('epKategori').value;
+    const nominal    = parseFloat(document.getElementById('epNominal').value) || 0;
     const keterangan = document.getElementById('epKet').value || kategori;
     if (!nominal) return UI.toast('Nominal wajib diisi', 'error');
-    
     DB.updatePengeluaran(id, { tanggal, kategori, nominal, keterangan });
     UI.closeModal();
     UI.toast('Pengeluaran diubah', 'success');

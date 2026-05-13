@@ -934,3 +934,166 @@ tbody tr:hover { background: rgba(255,255,255,0.03); }
 .nav-item { transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease; }
 .nav-item:hover { transform: translateX(3px); }
 .nav-item.active { transform: none; }
+
+/* ============================================================
+   CURSOR TRAIL SYSTEM
+   ============================================================ */
+* { cursor: none !important; }
+*::selection { background: rgba(79,142,247,0.3); }
+
+#cursorDot {
+  position: fixed; z-index: 99999;
+  width: 8px; height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: width 0.15s, height 0.15s, background 0.15s, opacity 0.3s;
+  will-change: transform;
+}
+#cursorTrail {
+  position: fixed; z-index: 99998;
+  width: 30px; height: 30px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition: width 0.2s, height 0.2s, border-color 0.2s, opacity 0.3s;
+  will-change: transform;
+}
+#cursorDot.cursor-hover   { width: 14px; height: 14px; background: var(--cyan); }
+#cursorTrail.cursor-hover { width: 44px; height: 44px; border-color: var(--cyan); opacity: 0.4 !important; }
+#cursorDot.cursor-click   { width: 6px;  height: 6px;  background: var(--success); }
+#cursorTrail.cursor-click { width: 50px; height: 50px; opacity: 0.2 !important; }
+
+/* Click burst */
+.cursor-burst {
+  position: fixed; z-index: 99997;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,142,247,0.4), transparent 70%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: cursorBurst 0.6s ease-out forwards;
+}
+@keyframes cursorBurst {
+  to { width: 80px; height: 80px; opacity: 0; }
+}
+
+/* ============================================================
+   BUTTON RIPPLE WAVE
+   ============================================================ */
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transform: scale(0);
+  animation: rippleWave 0.6s linear;
+  pointer-events: none;
+}
+@keyframes rippleWave {
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* ============================================================
+   SWIPEABLE STAT STRIP
+   ============================================================ */
+.db-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  user-select: none;
+}
+.db-stat-strip.is-dragging { cursor: grabbing !important; }
+.db-stat-strip .stat-card { min-width: 200px; }
+
+@media (max-width: 1024px) {
+  .db-stat-strip {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+  .db-stat-strip::-webkit-scrollbar { display: none; }
+  .db-stat-strip .stat-card {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+  }
+}
+
+/* ============================================================
+   BALANCED PAGE LAYOUTS — ALL PAGES
+   ============================================================ */
+
+/* Universal 2-column: form (sticky left) + list (right) */
+.page-2col {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .page-2col { grid-template-columns: 1fr; }
+}
+@media (min-width: 901px) {
+  .page-2col-form { position: sticky; top: calc(var(--topbar-h) + 16px); }
+}
+
+/* Top summary strip (3 stat cards) */
+.page-summary-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 640px) {
+  .page-summary-strip { grid-template-columns: 1fr 1fr; }
+}
+
+/* Stat mini card inside pages */
+.mini-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  animation: fadeInUp 0.35s ease both;
+}
+.mini-stat-label { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin-bottom: 5px; }
+.mini-stat-val   { font-size: 1.1rem; font-weight: 800; }
+
+/* Table inside card */
+.card .table-wrap { margin: 0 -20px -20px; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; }
+.card .table-wrap table { border-radius: 0; }
+
+/* ============================================================
+   PENGELUARAN & SERVIS improved list
+   ============================================================ */
+.peng-list-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: var(--bg-base); border: 1px solid var(--border);
+  margin-bottom: 8px;
+  animation: fadeInUp 0.25s ease both;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.peng-list-item:hover { border-color: var(--border-accent); transform: translateX(3px); }
+
+/* ============================================================
+   PAGE TRANSITION
+   ============================================================ */
+.main { transition: opacity 0.2s ease, transform 0.2s ease; }
+
+/* ============================================================
+   DRAG HINT (first visit)
+   ============================================================ */
+.drag-hint {
+  text-align: center; font-size: 0.7rem; color: var(--text-muted);
+  margin-top: -12px; margin-bottom: 12px;
+  animation: fadeIn 1s ease 1s both;
+}
+.drag-hint span { display: none; }
+@media (max-width: 1024px) { .drag-hint span { display: inline; } }
