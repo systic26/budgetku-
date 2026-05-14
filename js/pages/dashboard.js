@@ -1,4 +1,4 @@
-/* Dashboard Page — Enhanced Analytics */
+﻿/* Dashboard Page ÔÇö Enhanced Analytics */
 window.Pages = window.Pages || {};
 Pages.dashboard = {
   _calYear: new Date().getFullYear(),
@@ -30,7 +30,7 @@ Pages.dashboard = {
 
     // Update title
     const titleEl = document.getElementById('dbCalTitle');
-    if (titleEl) titleEl.textContent = `🗓️ ${MONTHS[m]} ${y}`;
+    if (titleEl) titleEl.innerHTML = `&#x1F5D3;&#xFE0F; ${MONTHS[m]} ${y}`;
 
     // Today button visibility
     const todayBtn = document.getElementById('dbCalTodayBtn');
@@ -54,7 +54,7 @@ Pages.dashboard = {
     const ds = s.danaServis;
     const dsPct = ds.masuk > 0 ? Math.round((ds.keluar / ds.masuk) * 100) : 0;
     const rasio = s.rasioUtang;
-    const rasioDisplay = isFinite(rasio) ? rasio.toFixed(2) : '8';
+    const rasioDisplay = isFinite(rasio) ? rasio.toFixed(2) : '∞';
     const debtWarn = rasio > 1.0;
     const settings = DB.getSettings();
     const target = settings.target_harian || 150000;
@@ -72,28 +72,27 @@ Pages.dashboard = {
     const ringColor = s.todayIncome>=target?'var(--success)':s.todayIncome>=target*0.6?'var(--warning)':'var(--danger)';
 
     el.innerHTML = `
-      ${debtWarn ? `<div class="alert-debt mb-24"><div class="alert-debt-icon">??</div><div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}� � Utang melebihi saldo bersih!</div></div>` : ''}
+      ${debtWarn ? `<div class="alert-debt mb-24"><div class="alert-debt-icon">&#x1F6A8;</div><div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}&times; &mdash; Utang melebihi saldo bersih!</div></div>` : ''}
 
       <div class="db-stat-strip" id="dbStatStrip">
-        ${statCard('primary','??','Saldo Kotor', s.saldoKotor,
+        ${statCard('primary','&#x1F4B0;','Saldo Kotor', s.saldoKotor,
           `<div class="stat-breakdown"><div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div><div class="breakdown-row"><span class="breakdown-label">Insentif</span><span class="breakdown-val text-primary">${UI.formatRp(s.insentifIncome)}</span></div></div>`,
           'riwayat', 0)}
-        ${statCard('success','?','Saldo Bersih', s.saldoBersih,
+        ${statCard('success','&#x2705;','Saldo Bersih', s.saldoBersih,
           `<div class="stat-meta">Setelah pengeluaran &amp; alokasi servis</div>`,
           'laporan', 1)}
-        ${statCard('warning','??','Dana Servis', ds.sisa,
+        ${statCard('warning','&#x1F527;','Dana Servis', ds.sisa,
           `<div class="progress-wrap"><div class="progress-labels"><span>Terpakai ${dsPct}%</span><span>${UI.formatRp(ds.masuk)} terkumpul</span></div><div class="progress-bar"><div class="progress-fill ${dsPct>80?'danger':'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div></div>`,
           'servis', 2)}
-        ${statCard('danger','??','Total Utang', s.totalUtang,
-          `<div class="stat-meta">Rasio: ${rasioDisplay}�</div>`,
+        ${statCard('danger','&#x1F3E6;','Total Utang', s.totalUtang,
+          `<div class="stat-meta">Rasio: ${rasioDisplay}&times;</div>`,
           'utang', 3)}
       </div>
 
       <div class="db-main-layout">
-
         <div class="db-main-col">
           <div class="card db-line-card-xl">
-            <div class="db-line-title">?? TREN PENDAPATAN 30 HARI TERAKHIR</div>
+            <div class="db-line-title">&#x1F4C8; TREN PENDAPATAN 30 HARI TERAKHIR</div>
             <div class="db-line-meta-v2">
               <span>Total: <strong class="text-success">${UI.formatRp(last30.total)}</strong></span>
               <span>Rata-rata: <strong class="text-primary">${UI.formatRp(last30.avg)}</strong>/hari</span>
@@ -105,12 +104,12 @@ Pages.dashboard = {
           <div class="card db-cal-card">
             <div class="db-cal-header">
               <div class="db-cal-nav">
-                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(-1)" title="Bulan sebelumnya">?</button>
+                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(-1)" title="Bulan sebelumnya">&#x25C0;</button>
                 <div class="db-cal-title-wrap">
-                  <span class="card-title" id="dbCalTitle">??? ${MONTHS[this._calMonth]} ${this._calYear}</span>
+                  <span class="card-title" id="dbCalTitle">&#x1F5D3;&#xFE0F; ${MONTHS[this._calMonth]} ${this._calYear}</span>
                   <button class="db-cal-today-btn" id="dbCalTodayBtn" onclick="Pages.dashboard.goCalendarToday()" style="display:${this._calYear===new Date().getFullYear()&&this._calMonth===new Date().getMonth()?'none':'inline-flex'}">Hari Ini</button>
                 </div>
-                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(1)" title="Bulan berikutnya">?</button>
+                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(1)" title="Bulan berikutnya">&#x25B6;</button>
               </div>
               <select class="db-cal-year-sel" id="dbCalYear" onchange="Pages.dashboard.setCalYear(this.value)">
                 ${Array.from({length:8},(_,i)=>new Date().getFullYear()-3+i).map(yr=>`<option value="${yr}" ${yr===this._calYear?'selected':''}>${yr}</option>`).join('')}
@@ -124,12 +123,12 @@ Pages.dashboard = {
           </div>
 
           <div class="card">
-            <div class="card-title mb-12">?? Statistik Operasional</div>
+            <div class="card-title mb-12">&#x1F4C8; Statistik Operasional</div>
             <div id="dbStatRows"></div>
           </div>
 
           <div class="section-header">
-            <div class="section-title">?? Transaksi Terbaru</div>
+            <div class="section-title">&#x1F4CB; Transaksi Terbaru</div>
             <button class="btn btn-outline btn-sm" onclick="UI.navigateTo('riwayat')">Lihat Semua</button>
           </div>
           <div class="card">${renderRecentTransaksi()}</div>
@@ -137,14 +136,14 @@ Pages.dashboard = {
 
         <div class="db-right-panel">
           <div class="card db-rp-card">
-            <div class="db-rp-label">?? Perbandingan Minggu</div>
+            <div class="db-rp-label">&#x1F4C6; PERBANDINGAN MINGGU</div>
             <div class="db-rp-week-row">
               <div class="db-rp-week-item">
                 <div class="db-rp-week-label">Minggu Ini</div>
                 <div class="db-rp-week-val text-success">${UI.formatRp(week.thisWeek)}</div>
                 <div class="db-rp-week-days">${week.thisWDays} hari kerja</div>
               </div>
-              <div class="db-rp-week-badge ${week.delta>=0?'up':'down'}">${week.delta>=0?'?':'?'} ${Math.abs(week.deltaPct)}%</div>
+              <div class="db-rp-week-badge ${week.delta>=0?'up':'down'}">${week.delta>=0?'&#x25B2;':'&#x25BC;'} ${Math.abs(week.deltaPct)}%</div>
               <div class="db-rp-week-item" style="text-align:right">
                 <div class="db-rp-week-label">Minggu Lalu</div>
                 <div class="db-rp-week-val text-muted">${UI.formatRp(week.lastWeek)}</div>
@@ -154,7 +153,7 @@ Pages.dashboard = {
           </div>
 
           <div class="card db-rp-card">
-            <div class="db-rp-label">?? Target Harian Hari Ini</div>
+            <div class="db-rp-label">&#x1F3AF; TARGET HARIAN HARI INI</div>
             <div class="db-rp-target-body">
               <div class="db-rp-ring-wrap">
                 <svg viewBox="0 0 80 80" class="db-rp-ring">
@@ -168,18 +167,17 @@ Pages.dashboard = {
                 <div class="db-rp-target-amt" style="color:${s.todayIncome>=target?'var(--success)':'var(--text-primary)'}">${UI.formatRp(s.todayIncome||0)}</div>
                 <div class="db-rp-target-goal">Target: ${UI.formatRp(target)}</div>
                 <div class="db-rp-target-status ${s.todayIncome>=target?'text-success':'text-warning'}">
-                  ${s.todayIncome>=target?'? Target Tercapai!':'? Kurang '+UI.formatRp(target-(s.todayIncome||0))}
+                  ${s.todayIncome>=target?'&#x2705; Target Tercapai!':'&#x26A1; Kurang '+UI.formatRp(target-(s.todayIncome||0))}
                 </div>
               </div>
             </div>
           </div>
 
           <div class="card db-rp-card db-rp-distrib-card">
-            <div class="db-rp-label">?? Distribusi Penghasilan</div>
+            <div class="db-rp-label">&#x1F4CA; DISTRIBUSI PENGHASILAN</div>
             <div id="pieChart"></div>
           </div>
         </div>
-
       </div>
     `;
 
@@ -198,7 +196,7 @@ Pages.dashboard = {
         { label: 'Hari Kerja', val: s.hariKerja+' hari', c: 'success' },
         { label: 'Total Alokasi Servis', val: UI.formatRp(s.alokasiServis), c: 'warning' },
         { label: 'Total Pengeluaran', val: UI.formatRp(s.totalPengeluaran), c: 'danger' },
-        { label: 'Rasio Utang/Bersih', val: rasioDisplay+'�', c: parseFloat(rasio)>1?'danger':'success' },
+        { label: 'Rasio Utang/Bersih', val: rasioDisplay+'×', c: parseFloat(rasio)>1?'danger':'success' },
       ];
       statRowsEl.innerHTML = rows.map(r=>`<div class="db-stat-row-item"><span class="label">${r.label}</span><span class="val text-${r.c}">${r.val}</span></div>`).join('');
     }
@@ -421,7 +419,7 @@ Pages.dashboard = {
     const gcalMonthUrl = `https://calendar.google.com/calendar/r/month/${y}/${m+1}`;
     listEl.innerHTML = `
       <div class="db-cal-hday-header">
-        <div class="db-cal-hday-title">🎉 Hari Libur ${holidays.length ? `(${holidays.length})` : 'Bulan Ini'}</div>
+        <div class="db-cal-hday-title">­ƒÄë Hari Libur ${holidays.length ? `(${holidays.length})` : 'Bulan Ini'}</div>
         <a class="db-gcal-link" href="${gcalMonthUrl}" target="_blank" rel="noopener">
           <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" width="14" height="14" style="vertical-align:middle;margin-right:4px"/>
           Google Calendar
@@ -434,10 +432,10 @@ Pages.dashboard = {
           return `<div class="db-cal-hday-item" onclick="Pages.dashboard._showDayDetail('${dStr}')">
             <span class="db-cal-hday-num">${c.day}</span>
             <span class="db-cal-hday-name">${c.holiday}</span>
-            <span class="db-cal-hday-arrow">›</span>
+            <span class="db-cal-hday-arrow">ÔÇ║</span>
           </div>`;
         }).join('')}
-      </div>` : `<div class="db-cal-hday-empty">✅ Tidak ada hari libur bulan ini</div>`}
+      </div>` : `<div class="db-cal-hday-empty">Ô£à Tidak ada hari libur bulan ini</div>`}
     `;
   },
 
@@ -460,25 +458,25 @@ Pages.dashboard = {
 
     // Build timeline events
     const events = [];
-    // 🎉 Holiday always first
-    if (holiday) events.push({ icon:'🎉', label: holiday, detail:'Hari Libur Nasional / Hari Besar', color:'warning', time:'' });
+    // ­ƒÄë Holiday always first
+    if (holiday) events.push({ icon:'­ƒÄë', label: holiday, detail:'Hari Libur Nasional / Hari Besar', color:'warning', time:'' });
     trxs.forEach(t => {
       const isWork = t.status_operasi === 'WORKING';
-      events.push({ icon: isWork?'⚡':'😴', label: isWork?'Hari Kerja':'Hari Libur', detail: isWork?`${t.jumlah_orderan||0} order · ${t.jam_mulai||'--'}–${t.jam_selesai||'--'}`:'Tidak ada aktivitas', color: isWork?'success':'muted', time: t.jam_mulai||'' });
+      events.push({ icon: isWork?'ÔÜí':'­ƒÿ┤', label: isWork?'Hari Kerja':'Hari Libur', detail: isWork?`${t.jumlah_orderan||0} order ┬À ${t.jam_mulai||'--'}ÔÇô${t.jam_selesai||'--'}`:'Tidak ada aktivitas', color: isWork?'success':'muted', time: t.jam_mulai||'' });
     });
-    cf.filter(c=>c.source_type==='TRIP').forEach(c => events.push({ icon:'🚗', label:'Penghasilan Trip', detail:'+'+UI.formatRp(c.nominal), color:'success', time:'' }));
-    cf.filter(c=>c.source_type==='INCENTIVE').forEach(c => events.push({ icon:'🎁', label:'Insentif Diterima', detail:'+'+UI.formatRp(c.nominal), color:'primary', time:'' }));
-    cf.filter(c=>c.source_type==='SERVIS_ALLOC').forEach(c => events.push({ icon:'🔧', label:'Alokasi Dana Servis', detail:UI.formatRp(c.nominal)+' dialokasikan', color:'warning', time:'' }));
-    peng.forEach(p => events.push({ icon:'💸', label:p.kategori||'Pengeluaran', detail:'-'+UI.formatRp(p.nominal)+(p.keterangan?' · '+p.keterangan:''), color:'danger', time:'' }));
-    serv.forEach(s => events.push({ icon:'🔩', label:'Servis: '+s.nama_servis, detail:'-'+UI.formatRp(s.biaya)+(s.keterangan?' · '+s.keterangan:''), color:'warning', time:'' }));
+    cf.filter(c=>c.source_type==='TRIP').forEach(c => events.push({ icon:'­ƒÜù', label:'Penghasilan Trip', detail:'+'+UI.formatRp(c.nominal), color:'success', time:'' }));
+    cf.filter(c=>c.source_type==='INCENTIVE').forEach(c => events.push({ icon:'­ƒÄü', label:'Insentif Diterima', detail:'+'+UI.formatRp(c.nominal), color:'primary', time:'' }));
+    cf.filter(c=>c.source_type==='SERVIS_ALLOC').forEach(c => events.push({ icon:'­ƒöº', label:'Alokasi Dana Servis', detail:UI.formatRp(c.nominal)+' dialokasikan', color:'warning', time:'' }));
+    peng.forEach(p => events.push({ icon:'­ƒÆ©', label:p.kategori||'Pengeluaran', detail:'-'+UI.formatRp(p.nominal)+(p.keterangan?' ┬À '+p.keterangan:''), color:'danger', time:'' }));
+    serv.forEach(s => events.push({ icon:'­ƒö®', label:'Servis: '+s.nama_servis, detail:'-'+UI.formatRp(s.biaya)+(s.keterangan?' ┬À '+s.keterangan:''), color:'warning', time:'' }));
 
     const noData = events.length === 0;
     const gcalDayUrl = `https://calendar.google.com/calendar/r/day/${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
     const gcalNewUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&dates=${dateStr.replace(/-/g,'')}/${dateStr.replace(/-/g,'')}&text=BudgetKu+${dateStr}&details=Pendapatan:+${UI.formatRp(income)}`;
 
-    UI.openModal(`📅 ${dateFormatted}`,
+    UI.openModal(`­ƒôà ${dateFormatted}`,
       `${holiday ? `<div class="day-holiday-banner">
-        <span style="font-size:1.3rem">🎉</span>
+        <span style="font-size:1.3rem">­ƒÄë</span>
         <div><div style="font-weight:700;font-size:0.88rem;color:#f5c842">${holiday}</div><div style="font-size:0.7rem;color:var(--text-muted)">Hari Libur Nasional Indonesia</div></div>
       </div>` : ''}
       <div class="day-detail-summary">
@@ -487,9 +485,9 @@ Pages.dashboard = {
         <div class="day-sum-item"><span class="text-muted">ALOKASI SERVIS</span><span class="text-warning fw-700">${UI.formatRp(alokasi)}</span></div>
         <div class="day-sum-item"><span class="text-muted">NET</span><span class="fw-700 ${net>=0?'text-success':'text-danger'}">${net>=0?'+':''} ${UI.formatRp(net)}</span></div>
       </div>
-      <div class="day-section-title">📋 Kronologi Hari Ini</div>
+      <div class="day-section-title">­ƒôï Kronologi Hari Ini</div>
       ${noData
-        ? `<div class="day-empty">😴 Tidak ada aktivitas tercatat hari ini</div>`
+        ? `<div class="day-empty">­ƒÿ┤ Tidak ada aktivitas tercatat hari ini</div>`
         : `<div class="day-timeline">
           ${events.map(ev=>`
             <div class="day-tl-item">
@@ -555,7 +553,7 @@ function statCard(type, icon, label, value, extra='', navTo='', delay=0) {
   return `<div class="stat-card ${type}${navTo?' card-link':''}"
     ${navTo?`onclick="UI.navigateTo('${navTo}')" role="button" tabindex="0"`:''}  
     style="${animStyle}${navTo?';cursor:pointer':''}">
-    ${navTo?`<div class="stat-nav-badge">→</div>`:''}
+    ${navTo?`<div class="stat-nav-badge">ÔåÆ</div>`:''}
     <div class="stat-icon">${icon}</div>
     <div class="stat-label">${label}</div>
     <div class="stat-value ${type}">${UI.formatRp(value)}</div>
@@ -573,7 +571,7 @@ function renderRecentTransaksi() {
     const diff = new Date(b.tanggal)-new Date(a.tanggal);
     return diff!==0?diff:new Date(b.created_at||0)-new Date(a.created_at||0);
   }).slice(0,8);
-  if (!list.length) return UI.emptyState('📭','Belum ada transaksi. Mulai catat hari ini!');
+  if (!list.length) return UI.emptyState('­ƒô¡','Belum ada transaksi. Mulai catat hari ini!');
   return `<div class="table-wrap"><table>
     <thead><tr>
       <th>Tanggal</th><th>Status</th><th>Orderan</th>
@@ -592,8 +590,8 @@ function renderRecentTransaksi() {
           <td class="text-primary fw-600">${t.insentif>0?UI.formatRp(t.insentif):'<span class="text-muted">-</span>'}</td>
           <td class="text-warning">${alok>0?UI.formatRp(alok):'<span class="text-muted">-</span>'}</td>
           <td style="text-align:right">
-            <button class="btn-icon edit" onclick="Pages.dashboard._editTransaksi('${t.id}')">✏️</button>
-            <button class="btn-icon danger" onclick="Pages.dashboard._deleteTransaksi('${t.id}')">🗑</button>
+            <button class="btn-icon edit" onclick="Pages.dashboard._editTransaksi('${t.id}')">Ô£Å´©Å</button>
+            <button class="btn-icon danger" onclick="Pages.dashboard._deleteTransaksi('${t.id}')">­ƒùæ</button>
           </td>
         </tr>`;
       }).join('')}
