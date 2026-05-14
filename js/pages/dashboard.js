@@ -54,159 +54,135 @@ Pages.dashboard = {
     const ds = s.danaServis;
     const dsPct = ds.masuk > 0 ? Math.round((ds.keluar / ds.masuk) * 100) : 0;
     const rasio = s.rasioUtang;
-    const rasioDisplay = isFinite(rasio) ? rasio.toFixed(2) : '∞';
+    const rasioDisplay = isFinite(rasio) ? rasio.toFixed(2) : '8';
     const debtWarn = rasio > 1.0;
     const settings = DB.getSettings();
     const target = settings.target_harian || 150000;
     const week = this._getWeekComparison();
     const last30 = this._getLast30();
-    // Always sync calendar to current month on first load, preserve on nav
     if (!this._calInitialized) {
       this._calYear  = new Date().getFullYear();
       this._calMonth = new Date().getMonth();
       this._calInitialized = true;
     }
     const heatmap = this._getMonthHeatmap(this._calYear, this._calMonth);
+    const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const ringPct = Math.min(100, Math.round(((s.todayIncome||0)/target)*100));
+    const ringOffset = 201 - Math.min(201, Math.round(((s.todayIncome||0)/target)*201));
+    const ringColor = s.todayIncome>=target?'var(--success)':s.todayIncome>=target*0.6?'var(--warning)':'var(--danger)';
 
     el.innerHTML = `
-      ${debtWarn ? `<div class="alert-debt mb-24">
-        <div class="alert-debt-icon">🚨</div>
-        <div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}× — Utang melebihi saldo bersih!</div>
-      </div>` : ''}
+      ${debtWarn ? `<div class="alert-debt mb-24"><div class="alert-debt-icon">??</div><div class="alert-debt-text">Rasio Utang/Bersih ${rasioDisplay}� � Utang melebihi saldo bersih!</div></div>` : ''}
 
-      <!-- STAT CARDS — swipeable strip -->
       <div class="db-stat-strip" id="dbStatStrip">
-        ${statCard('primary','💰','Saldo Kotor', s.saldoKotor,
-          `<div class="stat-breakdown">
-            <div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div>
-            <div class="breakdown-row"><span class="breakdown-label">Insentif</span><span class="breakdown-val text-primary">${UI.formatRp(s.insentifIncome)}</span></div>
-          </div>`, 'riwayat', 0)}
-        ${statCard('success','✅','Saldo Bersih', s.saldoBersih,
-          `<div class="stat-meta">Setelah pengeluaran & alokasi servis</div>`, 'laporan', 1)}
-        ${statCard('warning','🔧','Dana Servis', ds.sisa,
-          `<div class="progress-wrap">
-            <div class="progress-labels"><span>Terpakai ${dsPct}%</span><span>${UI.formatRp(ds.masuk)} terkumpul</span></div>
-            <div class="progress-bar"><div class="progress-fill ${dsPct>80?'danger':'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div>
-          </div>`, 'servis', 2)}
-        ${statCard('danger','🏦','Total Utang', s.totalUtang,
-          `<div class="stat-meta">Rasio: ${rasioDisplay}×</div>`, 'utang', 3)}
+        ${statCard('primary','??','Saldo Kotor', s.saldoKotor,
+          `<div class="stat-breakdown"><div class="breakdown-row"><span class="breakdown-label">Trip</span><span class="breakdown-val text-primary">${UI.formatRp(s.tripIncome)}</span></div><div class="breakdown-row"><span class="breakdown-label">Insentif</span><span class="breakdown-val text-primary">${UI.formatRp(s.insentifIncome)}</span></div></div>`,
+          'riwayat', 0)}
+        ${statCard('success','?','Saldo Bersih', s.saldoBersih,
+          `<div class="stat-meta">Setelah pengeluaran &amp; alokasi servis</div>`,
+          'laporan', 1)}
+        ${statCard('warning','??','Dana Servis', ds.sisa,
+          `<div class="progress-wrap"><div class="progress-labels"><span>Terpakai ${dsPct}%</span><span>${UI.formatRp(ds.masuk)} terkumpul</span></div><div class="progress-bar"><div class="progress-fill ${dsPct>80?'danger':'warning'}" style="width:${Math.min(dsPct,100)}%"></div></div></div>`,
+          'servis', 2)}
+        ${statCard('danger','??','Total Utang', s.totalUtang,
+          `<div class="stat-meta">Rasio: ${rasioDisplay}�</div>`,
+          'utang', 3)}
       </div>
 
-      <!-- ROW: 30-day chart + Week comparison -->
-      <div class="db-chart-row mb-20">
-        <div class="card db-line-card">
-          <div class="card-title mb-4">📈 Tren Pendapatan 30 Hari Terakhir</div>
-          <div class="db-line-meta">
-            <span class="text-muted" style="font-size:0.75rem">Total: <strong class="text-success">${UI.formatRp(last30.total)}</strong></span>
-            <span class="text-muted" style="font-size:0.75rem">Rata-rata: <strong class="text-primary">${UI.formatRp(last30.avg)}</strong>/hari</span>
-            <span class="text-muted" style="font-size:0.75rem">Terbaik: <strong class="text-warning">${UI.formatRp(last30.max)}</strong></span>
+      <div class="db-main-layout">
+
+        <div class="db-main-col">
+          <div class="card db-line-card-xl">
+            <div class="db-line-title">?? TREN PENDAPATAN 30 HARI TERAKHIR</div>
+            <div class="db-line-meta-v2">
+              <span>Total: <strong class="text-success">${UI.formatRp(last30.total)}</strong></span>
+              <span>Rata-rata: <strong class="text-primary">${UI.formatRp(last30.avg)}</strong>/hari</span>
+              <span>Terbaik: <strong class="text-warning">${UI.formatRp(last30.max)}</strong></span>
+            </div>
+            <div id="dbLineChart" class="db-line-chart-wrap"></div>
           </div>
-          <div id="dbLineChart" style="width:100%;margin-top:8px"></div>
-        </div>
-        <div class="db-side-col">
-          <!-- Week comparison -->
-          <div class="card db-week-card">
-            <div class="card-title mb-12">📆 Perbandingan Minggu</div>
-            <div class="db-week-row">
-              <div class="db-week-item">
-                <div class="db-week-label">Minggu Ini</div>
-                <div class="db-week-val text-success">${UI.formatRp(week.thisWeek)}</div>
-                <div class="db-week-days">${week.thisWDays} hari kerja</div>
+
+          <div class="card db-cal-card">
+            <div class="db-cal-header">
+              <div class="db-cal-nav">
+                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(-1)" title="Bulan sebelumnya">?</button>
+                <div class="db-cal-title-wrap">
+                  <span class="card-title" id="dbCalTitle">??? ${MONTHS[this._calMonth]} ${this._calYear}</span>
+                  <button class="db-cal-today-btn" id="dbCalTodayBtn" onclick="Pages.dashboard.goCalendarToday()" style="display:${this._calYear===new Date().getFullYear()&&this._calMonth===new Date().getMonth()?'none':'inline-flex'}">Hari Ini</button>
+                </div>
+                <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(1)" title="Bulan berikutnya">?</button>
               </div>
-              <div class="db-week-arrow ${week.delta >= 0 ? 'up' : 'down'}">${week.delta >= 0 ? '▲' : '▼'} ${Math.abs(week.deltaPct)}%</div>
-              <div class="db-week-item">
-                <div class="db-week-label">Minggu Lalu</div>
-                <div class="db-week-val text-muted">${UI.formatRp(week.lastWeek)}</div>
-                <div class="db-week-days">${week.lastWDays} hari kerja</div>
+              <select class="db-cal-year-sel" id="dbCalYear" onchange="Pages.dashboard.setCalYear(this.value)">
+                ${Array.from({length:8},(_,i)=>new Date().getFullYear()-3+i).map(yr=>`<option value="${yr}" ${yr===this._calYear?'selected':''}>${yr}</option>`).join('')}
+              </select>
+            </div>
+            <div class="db-cal-day-headers">
+              ${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=>`<div class="db-cal-dh">${d}</div>`).join('')}
+            </div>
+            <div class="db-cal-grid" id="dbHeatmap"></div>
+            <div class="db-cal-holiday-list" id="dbHolidayList"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title mb-12">?? Statistik Operasional</div>
+            <div id="dbStatRows"></div>
+          </div>
+
+          <div class="section-header">
+            <div class="section-title">?? Transaksi Terbaru</div>
+            <button class="btn btn-outline btn-sm" onclick="UI.navigateTo('riwayat')">Lihat Semua</button>
+          </div>
+          <div class="card">${renderRecentTransaksi()}</div>
+        </div>
+
+        <div class="db-right-panel">
+          <div class="card db-rp-card">
+            <div class="db-rp-label">?? Perbandingan Minggu</div>
+            <div class="db-rp-week-row">
+              <div class="db-rp-week-item">
+                <div class="db-rp-week-label">Minggu Ini</div>
+                <div class="db-rp-week-val text-success">${UI.formatRp(week.thisWeek)}</div>
+                <div class="db-rp-week-days">${week.thisWDays} hari kerja</div>
+              </div>
+              <div class="db-rp-week-badge ${week.delta>=0?'up':'down'}">${week.delta>=0?'?':'?'} ${Math.abs(week.deltaPct)}%</div>
+              <div class="db-rp-week-item" style="text-align:right">
+                <div class="db-rp-week-label">Minggu Lalu</div>
+                <div class="db-rp-week-val text-muted">${UI.formatRp(week.lastWeek)}</div>
+                <div class="db-rp-week-days">${week.lastWDays} hari kerja</div>
               </div>
             </div>
           </div>
-          <!-- Target Harian -->
-          <div class="card db-target-card">
-            <div class="card-title mb-12">🎯 Target Harian Hari Ini</div>
-            <div class="db-target-body">
-              <!-- Circular Progress -->
-              <div class="db-target-ring-wrap">
-                <svg viewBox="0 0 80 80" class="db-target-ring">
+
+          <div class="card db-rp-card">
+            <div class="db-rp-label">?? Target Harian Hari Ini</div>
+            <div class="db-rp-target-body">
+              <div class="db-rp-ring-wrap">
+                <svg viewBox="0 0 80 80" class="db-rp-ring">
                   <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
-                  <circle cx="40" cy="40" r="32" fill="none"
-                    stroke="${s.todayIncome>=target?'var(--success)':s.todayIncome>=target*0.6?'var(--warning)':'var(--danger)'}"
-                    stroke-width="7" stroke-linecap="round"
-                    stroke-dasharray="201"
-                    stroke-dashoffset="${201 - Math.min(201, Math.round((((s.todayIncome||0)/target)*201)))}"
-                    transform="rotate(-90 40 40)"
-                    style="transition:stroke-dashoffset 1s ease"/>
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="${ringColor}" stroke-width="7" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="${ringOffset}" transform="rotate(-90 40 40)" style="transition:stroke-dashoffset 1s ease"/>
                 </svg>
-                <div class="db-target-ring-pct">${Math.min(100,Math.round(((s.todayIncome||0)/target)*100))}%</div>
+                <div class="db-rp-ring-pct">${ringPct}%</div>
               </div>
-              <!-- Numbers -->
-              <div class="db-target-nums">
-                <div style="font-size:0.68rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Pendapatan Hari Ini</div>
-                <div style="font-size:1.25rem;font-weight:800;color:${s.todayIncome>=target?'var(--success)':'var(--text-primary)'};margin:4px 0">${UI.formatRp(s.todayIncome||0)}</div>
-                <div style="font-size:0.72rem;color:var(--text-muted)">Target: ${UI.formatRp(target)}</div>
-                <div style="margin-top:8px;font-size:0.78rem;font-weight:600" class="${s.todayIncome>=target?'text-success':'text-warning'}">
-                  ${s.todayIncome>=target?'✅ Target Tercapai!':'⚡ Kurang '+UI.formatRp(target-(s.todayIncome||0))}
+              <div class="db-rp-target-nums">
+                <div class="db-rp-target-label">Pendapatan Hari Ini</div>
+                <div class="db-rp-target-amt" style="color:${s.todayIncome>=target?'var(--success)':'var(--text-primary)'}">${UI.formatRp(s.todayIncome||0)}</div>
+                <div class="db-rp-target-goal">Target: ${UI.formatRp(target)}</div>
+                <div class="db-rp-target-status ${s.todayIncome>=target?'text-success':'text-warning'}">
+                  ${s.todayIncome>=target?'? Target Tercapai!':'? Kurang '+UI.formatRp(target-(s.todayIncome||0))}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ROW: Pie+Stats left | Calendar full right -->
-      <div class="db-cal-row mb-20">
-        <!-- Left: Pie + Stats stacked -->
-        <div class="db-cal-left">
-          <div class="card mb-16">
-            <div class="card-title mb-12">📊 Distribusi Penghasilan</div>
+          <div class="card db-rp-card db-rp-distrib-card">
+            <div class="db-rp-label">?? Distribusi Penghasilan</div>
             <div id="pieChart"></div>
           </div>
-          <div class="card">
-            <div class="card-title mb-12">📈 Statistik Operasional</div>
-            <div id="dbStatRows"></div>
-          </div>
         </div>
-        <!-- Right: Navigable Full Calendar -->
-        <div class="card db-cal-card">
-          <!-- Calendar Header with navigation -->
-          <div class="db-cal-header">
-            <div class="db-cal-nav">
-              <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(-1)" title="Bulan sebelumnya">◀</button>
-              <div class="db-cal-title-wrap">
-                <span class="card-title" id="dbCalTitle">🗓️ ${['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][this._calMonth]} ${this._calYear}</span>
-                <button class="db-cal-today-btn" id="dbCalTodayBtn" onclick="Pages.dashboard.goCalendarToday()" style="display:${this._calYear===new Date().getFullYear()&&this._calMonth===new Date().getMonth()?'none':'inline-flex'}">Hari Ini</button>
-              </div>
-              <button class="db-cal-nav-btn" onclick="Pages.dashboard.navigateCalendar(1)" title="Bulan berikutnya">▶</button>
-            </div>
-            <!-- Year selector -->
-            <select class="db-cal-year-sel" id="dbCalYear" onchange="Pages.dashboard.setCalYear(this.value)">
-              ${Array.from({length:8},(_,i)=>new Date().getFullYear()-3+i).map(yr=>`<option value="${yr}" ${yr===this._calYear?'selected':''}>${yr}</option>`).join('')}
-            </select>
-          </div>
-          <!-- Day headers -->
-          <div class="db-cal-day-headers">
-            ${['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map(d=>`<div class="db-cal-dh">${d}</div>`).join('')}
-          </div>
-          <!-- Calendar grid -->
-          <div class="db-cal-grid" id="dbHeatmap"></div>
-          <!-- Holiday list below -->
-          <div class="db-cal-holiday-list" id="dbHolidayList"></div>
-        </div>
-      </div>
 
-
-
-      <!-- Recent Transactions -->
-      <div class="section-header">
-        <div class="section-title">📋 Transaksi Terbaru</div>
-        <button class="btn btn-outline btn-sm" onclick="UI.navigateTo('riwayat')">Lihat Semua</button>
-      </div>
-      <div class="card">
-        ${renderRecentTransaksi()}
       </div>
     `;
 
-    // Render charts
     UI.renderPieChart('pieChart', [
       { label: 'Trip', value: s.tripIncome, color: 'var(--primary)' },
       { label: 'Insentif', value: s.insentifIncome, color: 'var(--purple)' },
@@ -214,7 +190,6 @@ Pages.dashboard = {
     this._renderLineChart('dbLineChart', last30.data);
     this._renderHeatmap('dbHeatmap', heatmap, target, this._calYear, this._calMonth);
 
-    // Render stat rows in middle card
     const statRowsEl = document.getElementById('dbStatRows');
     if (statRowsEl) {
       const rows = [
@@ -223,12 +198,9 @@ Pages.dashboard = {
         { label: 'Hari Kerja', val: s.hariKerja+' hari', c: 'success' },
         { label: 'Total Alokasi Servis', val: UI.formatRp(s.alokasiServis), c: 'warning' },
         { label: 'Total Pengeluaran', val: UI.formatRp(s.totalPengeluaran), c: 'danger' },
-        { label: 'Rasio Utang/Bersih', val: rasioDisplay+'×', c: parseFloat(rasio)>1?'danger':'success' },
+        { label: 'Rasio Utang/Bersih', val: rasioDisplay+'�', c: parseFloat(rasio)>1?'danger':'success' },
       ];
-      statRowsEl.innerHTML = rows.map(r=>`<div class="db-stat-row-item">
-        <span class="label">${r.label}</span>
-        <span class="val text-${r.c}">${r.val}</span>
-      </div>`).join('');
+      statRowsEl.innerHTML = rows.map(r=>`<div class="db-stat-row-item"><span class="label">${r.label}</span><span class="val text-${r.c}">${r.val}</span></div>`).join('');
     }
   },
 
@@ -355,7 +327,7 @@ Pages.dashboard = {
     const el = document.getElementById(containerId);
     if (!el) return;
     const max = Math.max(...data.map(d => d.value), 1);
-    const W = 600, H = 100, padL = 8, padR = 8, padT = 10, padB = 20;
+    const W = 700, H = 260, padL = 50, padR = 12, padT = 14, padB = 28;
     const cW = W - padL - padR, cH = H - padT - padB;
     const pts = data.map((d, i) => ({
       x: padL + (i / (data.length - 1)) * cW,
@@ -363,7 +335,6 @@ Pages.dashboard = {
       ...d
     }));
 
-    // Smooth bezier path
     let path = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
     for (let i = 1; i < pts.length; i++) {
       const cx = (pts[i-1].x + pts[i].x) / 2;
@@ -371,24 +342,38 @@ Pages.dashboard = {
     }
     const fillPath = path + ` L${pts[pts.length-1].x},${padT+cH} L${pts[0].x},${padT+cH} Z`;
 
-    // X-axis labels (every 5 days)
-    const labels = data.map((d,i) => i % 5 === 0 || d.isToday ?
-      `<text x="${pts[i].x.toFixed(1)}" y="${H}" text-anchor="middle" font-size="8" fill="var(--text-muted)">${d.label}</text>` : '').join('');
+    const gridLines = [0.25, 0.5, 0.75, 1.0].map(pct => {
+      const gy = padT + cH - pct * cH;
+      const gv = Math.round(max * pct);
+      const gLabel = gv >= 1000000 ? (gv/1000000).toFixed(1)+'jt' : gv >= 1000 ? (gv/1000).toFixed(0)+'k' : gv;
+      return `<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W-padR}" y2="${gy.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="3,4"/>
+              <text x="${padL-6}" y="${(gy+4).toFixed(1)}" text-anchor="end" font-size="9" fill="rgba(136,146,176,0.8)" font-family="Inter,sans-serif">${gLabel}</text>`;
+    }).join('');
 
-    // Today dot
+    const labels = data.map((d,i) => (i % 5 === 0 || d.isToday) ?
+      `<text x="${pts[i].x.toFixed(1)}" y="${H-2}" text-anchor="middle" font-size="9" fill="${d.isToday?'var(--primary)':'rgba(136,146,176,0.7)'}" font-family="Inter,sans-serif" font-weight="${d.isToday?'700':'400'}">${d.label}</text>` : '').join('');
+
     const todayPt = pts.find(p => p.isToday);
-    const todayDot = todayPt ? `<circle cx="${todayPt.x.toFixed(1)}" cy="${todayPt.y.toFixed(1)}" r="4" fill="var(--success)" stroke="var(--bg-card)" stroke-width="2"/>` : '';
+    const todayDot = todayPt ? `
+      <circle cx="${todayPt.x.toFixed(1)}" cy="${todayPt.y.toFixed(1)}" r="8" fill="var(--success)" fill-opacity="0.18"/>
+      <circle cx="${todayPt.x.toFixed(1)}" cy="${todayPt.y.toFixed(1)}" r="4.5" fill="var(--success)" stroke="var(--bg-card)" stroke-width="2"/>` : '';
 
     el.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" width="100%" height="100" preserveAspectRatio="none" style="display:block">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="280" preserveAspectRatio="none" style="display:block;overflow:visible">
         <defs>
-          <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/>
-            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.02"/>
+          <linearGradient id="lineGradV2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.5"/>
+            <stop offset="55%" stop-color="var(--primary)" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.01"/>
           </linearGradient>
+          <filter id="lineGlowV2" x="-5%" y="-30%" width="110%" height="160%">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
         </defs>
-        <path d="${fillPath}" fill="url(#lineGrad)"/>
-        <path d="${path}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/>
+        ${gridLines}
+        <path d="${fillPath}" fill="url(#lineGradV2)"/>
+        <path d="${path}" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#lineGlowV2)"/>
         ${todayDot}
         ${labels}
       </svg>`;

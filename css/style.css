@@ -1685,3 +1685,161 @@ table tbody tr:hover { background: rgba(79,142,247,0.04); }
 .set-sum-val   { font-size: 0.9rem; font-weight: 800; }
 
 
+
+/* ============================================================
+   DASHBOARD v2 — 3-PANEL LAYOUT (right sidebar widgets)
+   ============================================================ */
+
+/* Main grid: center col + right panel */
+.db-main-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+.db-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.db-right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+}
+
+/* Tall line chart card */
+.db-line-card-xl { padding: 20px 22px 16px; }
+.db-line-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.db-line-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.db-line-meta-v2 {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.db-line-meta-v2 strong { font-weight: 700; }
+.db-line-chart-wrap { width: 100%; margin-top: 8px; }
+
+/* Right-panel cards */
+.db-rp-card { padding: 16px 18px; }
+.db-rp-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+/* Week comparison in right panel */
+.db-rp-week-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.db-rp-week-item { flex: 1; }
+.db-rp-week-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.db-rp-week-val { font-size: 1.1rem; font-weight: 800; margin-bottom: 2px; }
+.db-rp-week-days { font-size: 0.66rem; color: var(--text-muted); }
+.db-rp-week-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 5px 9px;
+  border-radius: 99px;
+  text-align: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.db-rp-week-badge.up   { background: var(--success-glow); color: var(--success); }
+.db-rp-week-badge.down { background: var(--danger-glow);  color: var(--danger); }
+
+/* Target harian in right panel */
+.db-rp-target-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.db-rp-ring-wrap {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  flex-shrink: 0;
+}
+.db-rp-ring { width: 86px; height: 86px; }
+.db-rp-ring-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.db-rp-target-nums { flex: 1; min-width: 0; }
+.db-rp-target-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.db-rp-target-amt {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+  line-height: 1.1;
+}
+.db-rp-target-goal {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.db-rp-target-status {
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+/* Distribusi pie in right panel */
+.db-rp-distrib-card { padding: 16px 18px 12px; }
+
+/* Responsive breakpoints */
+@media (max-width: 1200px) {
+  .db-main-layout { grid-template-columns: 1fr 270px; }
+}
+@media (max-width: 960px) {
+  .db-main-layout { grid-template-columns: 1fr; }
+  .db-right-panel { position: static; flex-direction: row; flex-wrap: wrap; }
+  .db-rp-card { flex: 1 1 260px; }
+}
+@media (max-width: 640px) {
+  .db-right-panel { flex-direction: column; }
+  .db-rp-card { flex: unset; }
+}
