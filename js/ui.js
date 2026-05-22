@@ -38,11 +38,16 @@ const UI = (() => {
 
   /* ===== TOAST ===== */
   function toast(msg, type = 'info', duration = 3500) {
-    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    const svgs = {
+      success: `<svg class="toast-svg" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+      error: `<svg class="toast-svg" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+      warning: `<svg class="toast-svg" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+      info: `<svg class="toast-svg" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+    };
     const c = document.getElementById('toastContainer');
     const t = document.createElement('div');
     t.className = `toast ${type}`;
-    t.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+    t.innerHTML = `<span class="toast-icon">${svgs[type]}</span><span class="toast-msg">${msg}</span>`;
     c.appendChild(t);
     setTimeout(() => {
       t.classList.add('fadeout');
@@ -87,7 +92,7 @@ const UI = (() => {
       dashboard: 'Dashboard', transaksi: 'Input Transaksi',
       riwayat: 'Riwayat Cashflow', servis: 'Riwayat Servis',
       pengeluaran: 'Pengeluaran', utang: 'Utang',
-      pengaturan: 'Pengaturan', laporan: '📄 Laporan Bulanan',
+      pengaturan: 'Pengaturan', laporan: 'Laporan Bulanan',
     };
     document.getElementById('pageTitle').textContent = titles[page] || page;
     // Render page
@@ -111,8 +116,16 @@ const UI = (() => {
 
   /* ===== BADGE HELPER ===== */
   function badgeStatus(status) {
-    if (status === 'WORKING') return '<span class="badge badge-success">⚡ Kerja</span>';
-    if (status === 'OFF') return '<span class="badge badge-warning">💤 Libur</span>';
+    if (status === 'WORKING') {
+      return `<span class="badge badge-success" style="display:inline-flex;align-items:center;gap:6px">
+        <span style="width:6px;height:6px;border-radius:50%;background-color:currentColor;display:inline-block"></span>Kerja
+      </span>`;
+    }
+    if (status === 'OFF') {
+      return `<span class="badge badge-warning" style="display:inline-flex;align-items:center;gap:6px">
+        <span style="width:6px;height:6px;border-radius:50%;background-color:currentColor;display:inline-block"></span>Libur
+      </span>`;
+    }
     return '<span class="badge badge-muted">-</span>';
   }
 
@@ -162,7 +175,13 @@ const UI = (() => {
     const el = document.getElementById(containerId);
     if (!el) return;
     const total = slices.reduce((s, sl) => s + sl.value, 0);
-    if (total === 0) { el.innerHTML = emptyState('📊', 'Belum ada data'); return; }
+    if (total === 0) {
+      el.innerHTML = emptyState(
+        `<svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" style="width:32px;height:32px;opacity:0.6"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+        'Belum ada data'
+      );
+      return;
+    }
     const cx = 80, cy = 80, r = 70;
     let startAngle = -Math.PI / 2;
     let paths = '';
@@ -174,23 +193,23 @@ const UI = (() => {
       const x2 = cx + r * Math.cos(endAngle);
       const y2 = cy + r * Math.sin(endAngle);
       const large = angle > Math.PI ? 1 : 0;
-      paths += `<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${sl.color}" opacity="0.85"><title>${sl.label}: ${UI.formatRp(sl.value)}</title></path>`;
+      paths += `<path d="M${cx},${cy} L${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" fill="${sl.color}" opacity="0.85" style="transition:opacity 0.2s; cursor:pointer"><title>${sl.label}: ${UI.formatRp(sl.value)}</title></path>`;
       startAngle = endAngle;
     });
     const legend = slices.map(sl =>
-      `<div style="display:flex;align-items:center;gap:6px;font-size:0.75rem">
+      `<div style="display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.01);border:1px solid var(--border)">
         <div style="width:10px;height:10px;border-radius:50%;background:${sl.color}"></div>
-        <span style="color:var(--text-secondary)">${sl.label}</span>
-        <span style="font-weight:600;margin-left:auto">${((sl.value / total) * 100).toFixed(1)}%</span>
+        <span style="color:var(--text-secondary);font-weight:500">${sl.label}</span>
+        <span style="font-weight:700;margin-left:auto;color:var(--text-primary)">${((sl.value / total) * 100).toFixed(1)}%</span>
       </div>`
     ).join('');
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
       <svg width="160" height="160" viewBox="0 0 160 160">${paths}
-        <circle cx="80" cy="80" r="35" fill="var(--bg-card)"/>
-        <text x="80" y="84" text-anchor="middle" font-size="10" fill="var(--text-secondary)">Total</text>
-        <text x="80" y="97" text-anchor="middle" font-size="9" fill="var(--text-primary)" font-weight="700">${UI.formatRp(total)}</text>
+        <circle cx="80" cy="80" r="38" fill="var(--bg-surface)"/>
+        <text x="80" y="80" text-anchor="middle" font-size="10" fill="var(--text-muted)" font-family="var(--font-body)">Total</text>
+        <text x="80" y="93" text-anchor="middle" font-size="10" fill="var(--text-primary)" font-weight="700" font-family="var(--font-display)">${UI.formatRp(total).replace('Rp','').replace('.000','k')}</text>
       </svg>
-      <div style="flex:1;display:flex;flex-direction:column;gap:8px">${legend}</div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px">${legend}</div>
     </div>`;
   }
 

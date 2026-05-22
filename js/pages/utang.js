@@ -14,26 +14,26 @@ Pages.utang = {
 
     el.innerHTML = `
       ${warn ? `<div class="alert-debt mb-16">
-        <div class="alert-debt-icon">🚨</div>
+        <div class="alert-debt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:22px;height:22px;color:var(--danger)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
         <div class="alert-debt-text">Rasio Utang/Bersih ${rasio}× — Utang melebihi saldo bersih Anda!</div>
       </div>` : ''}
 
       <!-- Summary Strip -->
       <div class="page-summary-strip">
         <div class="mini-stat">
-          <div class="mini-stat-label">🏦 Total Utang Aktif</div>
+          <div class="mini-stat-label">Total Utang Aktif</div>
           <div class="mini-stat-val text-danger">${UI.formatRp(totalAktif)}</div>
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${aktif.length} tagihan belum lunas</div>
         </div>
         <div class="mini-stat">
-          <div class="mini-stat-label">✅ Sudah Dilunasi</div>
+          <div class="mini-stat-label">Sudah Dilunasi</div>
           <div class="mini-stat-val text-success">${UI.formatRp(totalLunas)}</div>
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${list.filter(u=>u.lunas).length} tagihan lunas</div>
         </div>
         <div class="mini-stat">
-          <div class="mini-stat-label">⚠️ Rasio Utang</div>
+          <div class="mini-stat-label">Rasio Utang</div>
           <div class="mini-stat-val ${warn?'text-danger':'text-success'}">${rasio}×</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${warn?'⚠️ Berbahaya':'✅ Aman'}</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:3px">${warn?'Berbahaya':'Aman'}</div>
         </div>
       </div>
 
@@ -41,7 +41,7 @@ Pages.utang = {
       <div class="page-2col">
         <!-- Form -->
         <div class="card page-2col-form">
-          <div class="card-title mb-16">➕ Tambah Utang</div>
+          <div class="card-title mb-16"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Tambah Utang</div>
           <form id="formUtang">
             <div class="form-group">
               <label class="form-label">Tanggal</label>
@@ -63,13 +63,13 @@ Pages.utang = {
               <label class="form-label">Keterangan</label>
               <input type="text" class="form-control" id="utGKet" placeholder="detail utang" />
             </div>
-            <button type="submit" class="btn btn-danger btn-full">🏦 Simpan Utang</button>
+            <button type="submit" class="btn btn-danger btn-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Simpan Utang</button>
           </form>
         </div>
 
         <!-- List -->
         <div class="card">
-          <div class="card-title mb-12">🏦 Daftar Utang</div>
+          <div class="card-title mb-12"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Daftar Utang</div>
           <div id="utangList">${this._renderList(list)}</div>
         </div>
       </div>
@@ -90,7 +90,7 @@ Pages.utang = {
   },
 
   _renderList(list) {
-    if (!list.length) return UI.emptyState('🏦', 'Belum ada utang tercatat');
+    if (!list.length) return UI.emptyState('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;opacity:0.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>', 'Belum ada utang tercatat');
     const sortedList = list.slice().sort((a, b) => {
       if (a.lunas !== b.lunas) return a.lunas ? 1 : -1;
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
@@ -111,13 +111,13 @@ Pages.utang = {
             </td>
             <td class="text-right fw-600 ${u.lunas?'text-muted':'text-danger'}">${UI.formatRp(u.nominal)}</td>
             <td style="white-space:nowrap;font-size:0.8rem">
-              ${jt ? `<span class="${overdue?'text-danger fw-600':'text-muted'}">${overdue?'⚠️ ':''} ${UI.formatDate(u.jatuh_tempo)}</span>` : '<span class="text-muted">—</span>'}
+              ${jt ? `<span class="${overdue?'text-danger fw-600':'text-muted'}">${overdue?'! ':''} ${UI.formatDate(u.jatuh_tempo)}</span>` : '<span class="text-muted">—</span>'}
             </td>
-            <td>${u.lunas?'<span class="badge badge-success">✅ Lunas</span>':'<span class="badge badge-danger">Aktif</span>'}</td>
+            <td>${u.lunas?'<span class="badge badge-success">Lunas</span>':'<span class="badge badge-danger">Aktif</span>'}</td>
             <td class="text-right" style="white-space:nowrap">
               ${!u.lunas?`<button class="btn btn-sm btn-success" onclick="Pages.utang._lunas('${u.id}')">Lunas</button>`:''}
-              <button class="btn-icon edit" onclick="Pages.utang._edit('${u.id}')">✏️</button>
-              <button class="btn-icon danger" onclick="Pages.utang._delete('${u.id}')">🗑</button>
+              <button class="btn-icon edit" onclick="Pages.utang._edit('${u.id}')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+              <button class="btn-icon danger" onclick="Pages.utang._delete('${u.id}')" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
             </td>
           </tr>`;
         }).join('')}
@@ -132,7 +132,7 @@ Pages.utang = {
 
   _lunas(id) {
     DB.updateUtang(id, { lunas: true });
-    UI.toast('Utang ditandai lunas ✅', 'success');
+    UI.toast('Utang ditandai lunas', 'success');
     Pages.utang.render();
   },
   _edit(id) {

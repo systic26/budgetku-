@@ -15,8 +15,6 @@
 function initTheme() {
   const saved = localStorage.getItem('bk_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
-  const btn = document.getElementById('themeToggle');
-  if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
 }
 
 function toggleTheme() {
@@ -24,8 +22,6 @@ function toggleTheme() {
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('bk_theme', next);
-  const btn = document.getElementById('themeToggle');
-  if (btn) btn.textContent = next === 'dark' ? '🌙' : '☀️';
 }
 
 /* ===== AUTH FLOW ===== */
@@ -147,6 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
       const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
       dateEl.textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    }
+
+    // Update Sync Status Widget
+    const syncEl = document.getElementById('sidebarSyncStatus');
+    if (syncEl) {
+      const status = DB.getSyncStatus();
+      syncEl.className = `sidebar-sync-status ${status}`;
+      const statusTexts = {
+        online: 'Terhubung (Cloud)',
+        offline: 'Offline (Lokal)',
+        error: 'Sync Bermasalah'
+      };
+      const textEl = syncEl.querySelector('.sync-text');
+      if (textEl) textEl.textContent = statusTexts[status] || 'Terhubung';
     }
   }
   updateTime();

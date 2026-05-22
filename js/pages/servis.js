@@ -24,7 +24,7 @@ Pages.servis = {
       <div class="grid-2">
         <!-- Form Servis -->
         <div class="card form-sticky">
-          <div class="card-title mb-16">➕ Catat Pengeluaran Servis</div>
+          <div class="card-title mb-16"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Catat Pengeluaran Servis</div>
           <form id="formServis">
             <div class="form-group">
               <label class="form-label">Tanggal</label>
@@ -42,13 +42,13 @@ Pages.servis = {
               <label class="form-label">Keterangan Tambahan</label>
               <input type="text" class="form-control" id="srvKet" placeholder="bengkel, merk, dll" />
             </div>
-            <button type="submit" class="btn btn-warning btn-full">🔧 Simpan Pengeluaran Servis</button>
+            <button type="submit" class="btn btn-warning btn-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Simpan Pengeluaran Servis</button>
           </form>
         </div>
 
         <!-- Riwayat Servis -->
         <div class="card">
-          <div class="card-title mb-12">🔧 Riwayat Servis</div>
+          <div class="card-title mb-12"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px;color:var(--warning)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Riwayat Servis</div>
           <div id="servisList">${this._renderList()}</div>
         </div>
       </div>
@@ -63,7 +63,7 @@ Pages.servis = {
       if (!nama_servis || biaya <= 0) return UI.toast('Isi semua field dengan benar', 'error');
       const ds2 = DB.getDanaServisBalance();
       if (biaya > ds2.sisa) {
-        UI.toast('⚠️ Biaya melebihi sisa dana servis!', 'warning');
+        UI.toast('Biaya melebihi sisa dana servis!', 'warning');
       }
       DB.insertServis({ tanggal, nama_servis, biaya, keterangan });
       UI.toast('Pengeluaran servis berhasil dicatat', 'success');
@@ -76,7 +76,7 @@ Pages.servis = {
       const diff = new Date(b.tanggal) - new Date(a.tanggal);
       return diff !== 0 ? diff : new Date(b.created_at||0) - new Date(a.created_at||0);
     });
-    if (!list.length) return UI.emptyState('🔧', 'Belum ada riwayat servis');
+    if (!list.length) return UI.emptyState('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;opacity:0.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>', 'Belum ada riwayat servis');
     return `<div class="table-wrap"><table>
       <thead><tr><th>Tanggal</th><th>Servis</th><th class="text-right">Biaya</th><th class="text-right">Aksi</th></tr></thead>
       <tbody>
@@ -90,8 +90,8 @@ Pages.servis = {
           </td>
           <td class="text-right text-warning fw-600" style="white-space:nowrap">${UI.formatRp(s.biaya)}</td>
           <td class="text-right" style="white-space:nowrap">
-            <button class="btn-icon edit" onclick="Pages.servis._edit('${s.id}')">✏️</button>
-            <button class="btn-icon danger" onclick="Pages.servis._delete('${s.id}')">🗑</button>
+            <button class="btn-icon edit" onclick="Pages.servis._edit('${s.id}')" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+            <button class="btn-icon danger" onclick="Pages.servis._delete('${s.id}')" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
           </td>
         </tr>`).join('')}
       </tbody>

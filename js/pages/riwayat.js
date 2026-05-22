@@ -12,22 +12,22 @@ Pages.riwayat = {
       <!-- SUMMARY CARDS -->
       <div class="rw-summary-grid">
         <div class="rw-stat-card rw-stat-today">
-          <div class="rw-stat-label">📅 Hari Ini</div>
+          <div class="rw-stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Hari Ini</div>
           <div class="rw-stat-value">${UI.formatRp(summary.today)}</div>
           <div class="rw-stat-sub">${summary.todayTrips} trip · ${UI.formatRp(summary.todayInsentif)} insentif</div>
         </div>
         <div class="rw-stat-card rw-stat-week">
-          <div class="rw-stat-label">📆 Minggu Ini</div>
+          <div class="rw-stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Minggu Ini</div>
           <div class="rw-stat-value">${UI.formatRp(summary.week)}</div>
           <div class="rw-stat-sub">${summary.weekDays} hari kerja</div>
         </div>
         <div class="rw-stat-card rw-stat-month">
-          <div class="rw-stat-label">🗓️ Bulan Ini</div>
+          <div class="rw-stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Bulan Ini</div>
           <div class="rw-stat-value">${UI.formatRp(summary.month)}</div>
           <div class="rw-stat-sub">Rata ${UI.formatRp(summary.monthAvg)}/hari</div>
         </div>
         <div class="rw-stat-card rw-stat-year">
-          <div class="rw-stat-label">📊 Tahun Ini</div>
+          <div class="rw-stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:6px"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Tahun Ini</div>
           <div class="rw-stat-value">${UI.formatRp(summary.year)}</div>
           <div class="rw-stat-sub">Total ${summary.yearDays} hari kerja</div>
         </div>
@@ -36,7 +36,7 @@ Pages.riwayat = {
       <!-- MINI CHART: 7-day trend -->
       <div class="card rw-chart-card">
         <div class="rw-chart-header">
-          <span class="rw-chart-title">📈 Tren Pendapatan 7 Hari Terakhir</span>
+          <span class="rw-chart-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>Tren Pendapatan 7 Hari Terakhir</span>
         </div>
         <div class="rw-chart-bars" id="rw7dayChart"></div>
         <div class="rw-chart-labels" id="rw7dayLabels"></div>
@@ -61,7 +61,7 @@ Pages.riwayat = {
             <option value="SERVIS">Servis</option>
             <option value="MANUAL">Manual</option>
           </select>
-          <button class="btn btn-outline btn-sm" id="rwExportBtn" style="white-space:nowrap">⬇️ CSV</button>
+          <button class="btn btn-outline btn-sm" id="rwExportBtn" style="white-space:nowrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>CSV</button>
         </div>
       </div>
 
@@ -261,7 +261,7 @@ Pages.riwayat = {
   },
 
   _renderTable(list) {
-    if (!list.length) return UI.emptyState('📭', 'Tidak ada data untuk periode ini');
+    if (!list.length) return UI.emptyState('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;opacity:0.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>', 'Tidak ada data untuk periode ini');
     return `
     <div class="table-wrap">
       <table>
@@ -286,8 +286,8 @@ Pages.riwayat = {
                 ${isOut ? '−' : '+'}${UI.formatRp(c.nominal)}
               </td>
               <td class="text-right" style="white-space:nowrap">
-                <button class="btn-icon edit" onclick="Pages.riwayat._edit('${c.id}')">✏️</button>
-                <button class="btn-icon danger" onclick="Pages.riwayat._delete('${c.id}')">🗑</button>
+                <button class="btn-icon edit" title="Edit" onclick="Pages.riwayat._edit('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="btn-icon danger" onclick="Pages.riwayat._delete('${c.id}')" title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
               </td>
             </tr>`;
           }).join('')}

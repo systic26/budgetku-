@@ -27,9 +27,17 @@ const DB = (() => {
     });
   }
 
+  let syncStatus = 'online'; // 'online', 'offline', 'error'
+
+  function getSyncStatus() {
+    if (!supabase) return 'offline';
+    return syncStatus;
+  }
+
   function _sync(table, data, action = 'UPSERT') {
     if (!supabase) {
-      if (window.UI) UI.toast('Supabase SDK tidak termuat. Periksa koneksi internet.', 'error');
+      syncStatus = 'offline';
+      console.warn('Supabase SDK tidak termuat. Berjalan dalam mode offline.');
       return;
     }
     setTimeout(async () => {
@@ -43,12 +51,14 @@ const DB = (() => {
           err = error;
         }
         if (err) {
+          syncStatus = 'error';
           console.error('Sync failed for', table, err);
-          if (window.UI) UI.toast(`Gagal Sync ke Supabase (${table}): ` + err.message, 'error');
+        } else {
+          syncStatus = 'online';
         }
       } catch (e) {
-        console.error(e);
-        if (window.UI) UI.toast('Error jaringan saat sync: ' + e.message, 'error');
+        syncStatus = 'offline';
+        console.error('Error jaringan saat sync:', e);
       }
     }, 100);
   }
@@ -435,6 +445,7 @@ const DB = (() => {
     getUtang, insertUtang, updateUtang, deleteUtang,
     getDashboardSummary,
     registerUser, loginUser, getCurrentUser, logoutUser,
+    getSyncStatus,
     // Expose Supabase client untuk listener di app.js
     getSupabase: () => supabase,
   };

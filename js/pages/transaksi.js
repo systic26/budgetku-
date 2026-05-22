@@ -14,7 +14,7 @@ Pages.transaksi = {
         <!-- LEFT: Form Input -->
         <div class="trx-left">
           <div class="card">
-            <div class="card-title mb-16">📝 Input Transaksi Harian</div>
+            <div class="card-title mb-16"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Input Transaksi Harian</div>
             <form id="formTransaksi" autocomplete="off">
 
               <div class="form-row">
@@ -52,7 +52,7 @@ Pages.transaksi = {
               </div>
               <div id="insentifBox" style="display:none">
                 <div class="infobox info">
-                  <span>ℹ️</span>
+                  <span class="infobox-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
                   <span>Insentif masuk ke <strong>Saldo Operasional</strong> — tidak ke Dana Servis</span>
                 </div>
                 <div class="form-group">
@@ -65,8 +65,8 @@ Pages.transaksi = {
               <div class="form-group">
                 <label class="form-label">Status Operasi</label>
                 <div class="radio-group">
-                  <div class="radio-btn selected working" id="btnKerja" onclick="Pages.transaksi.setStatus('WORKING')">⚡ Kerja</div>
-                  <div class="radio-btn off" id="btnLibur" onclick="Pages.transaksi.setStatus('OFF')">💤 Libur</div>
+                  <div class="radio-btn selected working" id="btnKerja" onclick="Pages.transaksi.setStatus('WORKING')">Kerja</div>
+                  <div class="radio-btn off" id="btnLibur" onclick="Pages.transaksi.setStatus('OFF')">Libur</div>
                 </div>
               </div>
 
@@ -74,7 +74,7 @@ Pages.transaksi = {
 
               <!-- ALOKASI PREVIEW -->
               <div id="alokasiPreview" class="infobox success">
-                <span>🔧</span>
+                <span class="infobox-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
                 <div>Alokasi Dana Servis: <strong id="alokasiNominal">${UI.formatRp(settings.alokasi_servis_harian)}</strong>
                   <span style="font-size:0.72rem;color:var(--text-muted);display:block">Berdasarkan rule aktif: Nominal Tetap ${UI.formatRp(settings.alokasi_servis_harian)}/hari kerja</span>
                 </div>
@@ -85,7 +85,7 @@ Pages.transaksi = {
                 <input type="text" class="form-control" id="trxKeterangan" placeholder="contoh: Target tercapai, cuaca hujan, dll" />
               </div>
 
-              <button type="submit" class="btn btn-primary btn-full" id="btnSimpan">💾 Simpan Transaksi</button>
+              <button type="submit" class="btn btn-primary btn-full" id="btnSimpan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Simpan Transaksi</button>
             </form>
           </div>
         </div>
@@ -95,13 +95,13 @@ Pages.transaksi = {
 
           <!-- Ringkasan cepat hari ini -->
           <div class="card trx-today-card">
-            <div class="card-title mb-12">⚡ Statistik Cepat</div>
+            <div class="card-title mb-12"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Statistik Cepat</div>
             ${this._renderQuickStats()}
           </div>
 
           <!-- Riwayat 5 transaksi terakhir -->
           <div class="card mt-16">
-            <div class="card-title mb-12">🕐 5 Transaksi Terakhir</div>
+            <div class="card-title mb-12"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>5 Transaksi Terakhir</div>
             ${recent.length ? recent.map(t => `
               <div class="trx-recent-item">
                 <div>
@@ -113,14 +113,14 @@ Pages.transaksi = {
                   <div style="font-size:0.72rem">${UI.badgeStatus(t.status_operasi)}</div>
                 </div>
               </div>
-            `).join('') : UI.emptyState('📭', 'Belum ada transaksi')}
+            `).join('') : UI.emptyState('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;opacity:0.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>', 'Belum ada transaksi')}
           </div>
 
           <!-- Manual Alokasi -->
           <div class="card mt-16">
-            <div class="card-title mb-12">🔧 Alokasi Manual ke Dana Servis</div>
+            <div class="card-title mb-12"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:8px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Alokasi Manual ke Dana Servis</div>
             <div class="infobox warning" style="margin-bottom:12px">
-              <span>⚠️</span>
+              <span class="infobox-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
               <span>Untuk kasus khusus. Source: <strong>MANUAL</strong>.</span>
             </div>
             <form id="formManual" autocomplete="off">
@@ -145,7 +145,7 @@ Pages.transaksi = {
                 <label class="form-label">Keterangan</label>
                 <input type="text" class="form-control" id="manKeterangan" placeholder="Alasan alokasi manual" />
               </div>
-              <button type="submit" class="btn btn-warning btn-full">💾 Simpan Alokasi Manual</button>
+              <button type="submit" class="btn btn-warning btn-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:6px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Simpan Alokasi Manual</button>
             </form>
           </div>
 
@@ -204,7 +204,7 @@ Pages.transaksi = {
     const info = document.getElementById('statusInfo');
     const prev = document.getElementById('alokasiPreview');
     if (s === 'OFF') {
-      info.innerHTML = '<div class="infobox warning"><span>💤</span><span>Hari libur — tidak ada alokasi dana servis otomatis</span></div>';
+      info.innerHTML = '<div class="infobox warning"><span class="infobox-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M8 16h8M8 8h8"/></svg></span><span>Hari libur — tidak ada alokasi dana servis otomatis</span></div>';
       prev.style.display = 'none';
     } else {
       info.innerHTML = '';
@@ -256,7 +256,7 @@ Pages.transaksi = {
         penghasilan_kotor, insentif, keterangan,
         status_override: this._status,
       });
-      UI.toast(`✅ Disimpan! Dana servis +${UI.formatRp(result.alokasi_servis)}`, 'success');
+      UI.toast(`Disimpan! Dana servis +${UI.formatRp(result.alokasi_servis)}`, 'success');
       document.getElementById('formTransaksi').reset();
       document.getElementById('trxTanggal').value = UI.todayISO();
       document.getElementById('insentifBox').style.display = 'none';
